@@ -60,4 +60,4 @@ jobs:
         with:
           app-name: 'ponzified'
           slot-name: 'Production'
-          publish-profile: ${{ secrets.AZUREAPPSERVICE_PUBLISHPROFILE_63FB231865864F3AA94C85E0E0C543C1 }}
+          publish-profile: ${{ secrets.AZUREAPPSERVICE_PUBLISHPROFILE_2DFA5AD3102647428F13D134E39D74A6 }}
