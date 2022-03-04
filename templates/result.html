@@ -1,0 +1,36 @@
+{% extends 'base.html' %}
+
+{%block head%} 
+{%endblock%}
+
+{%block body%} 
+<script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/2.9.4/Chart.js"></script>
+<div class="jumbotron text-center">
+    <h1>Welcome to Ponzified</h1>
+    <p class="lead">Results</p>
+</div>
+    <canvas id="myChart"></canvas>
+    <script>
+        var xValues = ["Italy", "France", "Spain", "USA", "Argentina"];
+        var yValues = [55, 149, 144, 24, 15];
+        
+        new Chart("myChart", {
+          type: "line",
+          data: {
+            labels: xValues,
+            datasets: [{
+              data: yValues
+            }]
+          },
+          options: {
+            legend: {display: false},
+            title: {
+              display: true,
+              text: "World Wine Production 2018"
+            }
+          }
+        });
+        </script>
+
+
+{%endblock%}
