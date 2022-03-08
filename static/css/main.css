@@ -2,3 +2,14 @@ body{
     margin:0;
     font-family:sans-serif;
 }
+
+th {
+    position: sticky;
+    top: 0;
+    background: #f6f8f8;
+  }
+
+.fixTableHead {
+    overflow-y: auto;
+    height: 500px;
+  }

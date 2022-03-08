@@ -4,6 +4,7 @@ from flask import Flask, render_template, request, redirect
 from flask_sqlalchemy import SQLAlchemy
 from sqlalchemy.exc import SQLAlchemyError
 import requests
+import time
 
 
 app = Flask(__name__)
@@ -27,41 +28,38 @@ class Test(db.Model):
 
 def index():
     return render_template('index.html')
-    #if request.method=="POST":
-     #   hash_content = request.form.get('address',None)
-      #  print (hash_content)
-       # new_task = Test(hash=hash_content)
+  
 
-        #try:
-         #   db.session.add(new_task)
-          #  db.session.commit()
-            #return render_template('index.html')
-           # return redirect('table.html')
-            #return "tESTING"
-        
-        #except SQLAlchemyError as e:
-         #   print (e)
-          #  return 'fail'
-    #else:
-     #   return render_template('index.html')
-
-#to search wallet
 @app.route('/charts/', methods=['GET'])
 def input():
     return render_template('charts.html')
 
-#By right, call sy's crawling thing to pull transactions for viewing
 @app.route('/Results/', methods=['POST', 'GET'])
 def results():
-    # data = args.get
-    # print(data)
     if request.method == 'POST':
         address = request.form.get('Wallet Address')
+        print ("ADDRESS IS: " + address)
     req = requests.get(
-        "https://api.etherscan.io/api?module=account&action=txlist&address=" + address + "&startblock=0&endblock=99999999&page=1&offset=10&sort=desc&tag=latest&apikey=" + apikey).json()
+        "https://api.etherscan.io/api?module=account&action=txlist&address=" + address + "&startblock=0&endblock=99999999&page=1&offset=50&sort=desc&tag=latest&apikey=" + apikey).json()
     val = req['result']
-    print(val)
-    return render_template('table.html')
+    index = 0
+    headings = []
+    test = val[0]
+    for key1,value1 in test.items():
+        headings.append(key1)
+
+    while index < len(val):
+        for key,value in val[index].items():
+            #Convert timestamp
+            if (key == "timeStamp"):
+                testtime=time.strftime('%Y-%m-%d %H:%M', time.localtime(int(value)))
+                value = value.replace(value,testtime)
+                val[index].update({"timeStamp": value})
+        index += 1
+    headings = tuple(headings)
+    
+    return render_template('table.html', headings= headings, result=val)
+
 
 if __name__ == "__main__":
     app.run(debug=True) #debug true means error show up on the site
