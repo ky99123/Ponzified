@@ -1,0 +1,28 @@
+{%block body%} 
+<script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/2.9.4/Chart.js"></script>
+    <canvas id="myChart"></canvas>
+    <script>
+      /*values to be changed*/
+        var xValues = ["Italy", "France", "Spain", "USA", "Argentina"];
+        var yValues = [55, 149, 144, 24, 15];
+        
+        new Chart("myChart", {
+          type: "bar",   /*Line if want line chart*/
+          data: {
+            labels: xValues,
+            datasets: [{
+              data: yValues
+            }]
+          },
+          options: {
+            legend: {display: false},
+            title: {
+              display: true,
+              text: "Normal vs Fradulent Transactions"
+            }
+          }
+        });
+        </script>
+
+
+{%endblock%}
