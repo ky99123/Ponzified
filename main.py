@@ -5,6 +5,7 @@ from flask_sqlalchemy import SQLAlchemy
 from sqlalchemy.exc import SQLAlchemyError
 import requests
 import time
+import json
 
 
 app = Flask(__name__)
@@ -13,6 +14,15 @@ app.config['SQLALCHEMY_DATABASE_URI'] = 'sqlite:///Test.db'
 db = SQLAlchemy(app)
 
 apikey = "R63INQIAZW9HGVSG83R63M477H4YMXDH6Q"
+
+
+def filter_address(address):
+    with open('blacklist.json') as blacklist:
+        data = json.load(blacklist)
+        for item in data:
+            if item['address'] == address:
+                return item['comment']
+        return "Address not blacklisted!"
 
 
 class Test(db.Model):

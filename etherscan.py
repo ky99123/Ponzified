@@ -1,4 +1,5 @@
 import requests
+import json
 from datetime import datetime
 
 apikey = "R63INQIAZW9HGVSG83R63M477H4YMXDH6Q"
@@ -20,6 +21,17 @@ def get_address_internal_transactions(address):
     req = requests.get("https://api.etherscan.io/api?module=account&action=txlistinternal&address=" + address + "&startblock=0&endblock=99999999&page=1&offset=10&sort=desc&apikey=" + apikey).json()
     val = req['result']
     return val
+
+
+def filter_address(address):
+    with open('blacklist.json') as blacklist:
+        data = json.load(blacklist)
+        for item in data:
+            if item['address'] == address:
+                return item['comment']
+        return "Address not blacklisted!"
+
+filter_address("0x2da8703d18AFeD53B303119E4fF06CF035a9fadB")
 
 address = str(input("input address:\n"))
 
