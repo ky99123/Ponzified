@@ -76,6 +76,7 @@ def results():
     senttrans =0
     tracker=0
     timestamp=[]
+    uniquesender=[]
     difference = 0 
     rectrans=0
     for key1 in test.keys():
@@ -94,6 +95,7 @@ def results():
        
         else:
             rectrans+=1
+            uniquesender.append(i["from"])
             findreceived.append(int(i["value"]))    
 
     while index < len(val):
@@ -125,6 +127,7 @@ def results():
         print("min received", min(findreceived)/1000000000000000000)
         print("avg sent:", (total/avgtracker)/1000000000000000000)
         print("total:", total/1000000000000000000)
+        print("unique recieved addresses:", uniquesender)
         #print("unique sents:", findsent)
         print("acc balance",int(bal)/1000000000000000000,"ether")
         print("total number of sent trans:", senttrans)
