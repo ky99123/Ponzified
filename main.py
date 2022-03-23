@@ -1,5 +1,6 @@
 #from crypt import methods
 from email.policy import default
+from itertools import count
 from flask import Flask, render_template, request, redirect
 from flask_sqlalchemy import SQLAlchemy
 from sqlalchemy.exc import SQLAlchemyError
@@ -126,8 +127,10 @@ def results():
         print("min sent:", min(findmax)/1000000000000000000)
         print("max received", max(findreceived)/1000000000000000000)
         print("min received", min(findreceived)/1000000000000000000)
+        print("avg received", (sum(findreceived)/len(findreceived))/1000000000000000000)
+        print("total received", sum(findreceived)/1000000000000000000)
         print("avg sent:", (total/avgtracker)/1000000000000000000)
-        print("total:", total/1000000000000000000)
+        print("total sent:", total/1000000000000000000)
         print("unique recieved addresses:", uniquesender) #can just use count if need the number of unique received address instead
         #print("unique sents:", findsent)
         print("acc balance",int(bal)/1000000000000000000,"ether")
