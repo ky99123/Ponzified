@@ -150,7 +150,10 @@ def refined_training_lessERC():
 
 def predict(predict_data_array):
     model = load('Final_FS_RF_Model_LessERC.joblib')
-    model.predict(predict_data_array)
+    input_data = np.array(predict_data_array)
+    ret = model.predict([input_data])[0]
+    print(ret)
+    return ret
 
 
 def main():

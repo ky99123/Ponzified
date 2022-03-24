@@ -33,8 +33,8 @@ def get_data(address):
     headings = tuple(headings)
 
     # Get Processed Transaction Data
-    sent_count, min_sent, max_sent, avg_sent, \
-        received_count, min_received, max_received, avg_received, \
+    sent_count, min_sent, max_sent, avg_sent, total_ether_sent, \
+        received_count, min_received, max_received, avg_received, total_ether_received, \
         unique_received_from_address = get_txn_data(txn_data, address)
 
     # Get Processed Timestamp Data
@@ -49,7 +49,7 @@ def get_data(address):
             first_last_time_diff, sent_count, received_count,
             unique_received_from_address, min_received,
             max_received, avg_received, min_sent, max_sent, avg_sent,
-            sent_count+received_count, "total_ether_sent, total_ether_received",
+            sent_count+received_count, total_ether_sent, total_ether_received,
             total_ether_balance]
     return data, headings, txn_data
 
@@ -72,16 +72,19 @@ def get_txn_data(transactions, address):
 
     min_sent = min(sent_txn_values)
     max_sent = max(sent_txn_values)
-    avg_sent = sum(sent_txn_values)/len(sent_txn_values)
+    total_ether_sent = sum(sent_txn_values)
+    avg_sent = total_ether_sent/len(sent_txn_values)
+
 
     min_received = min(received_txn_values)
     max_received = max(received_txn_values)
-    avg_received = sum(received_txn_values)/len(received_txn_values)
+    total_ether_received = sum(received_txn_values)
+    avg_received = total_ether_received/len(received_txn_values)
 
     received_address = list(set(received_address))
-    return sent_count, min_sent, max_sent, avg_sent, \
-        received_count, min_received, max_received, avg_received, \
-        received_address
+    return sent_count, min_sent, max_sent, avg_sent, total_ether_sent, \
+        received_count, min_received, max_received, avg_received, total_ether_received, \
+        len(received_address)
 
 
 def get_time_between_txn(transactions, address):
