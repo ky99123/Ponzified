@@ -145,21 +145,36 @@ def refined_training_lessERC():
     feature_df, feature_arr, target_arr = import_data(feature_file, target_file)
     print("Training Final Model without ERC")
     Final_Model = train_final_model(feature_arr, target_arr)
-    dump(Final_Model, 'Final_FS_RF_Model_LessERC.joblib')
+    dump(Final_Model, 'Final.joblib')
 
 
 def predict(predict_data_array):
-    model = load('Final_FS_RF_Model_LessERC.joblib')
+    model = load('Final.joblib')
     input_data = np.array(predict_data_array)
     ret = model.predict([input_data])[0]
-    print(ret)
+    print("Predicted Output: " + str(ret))
     return ret
+
+
+def diagnostics():
+    # feature_file = "transaction_dataset_clean_FS_lessERC.csv"
+    # target_file = "transaction_dataset_target.csv"
+    # feature_df, feature_arr, target_arr = import_data(feature_file, target_file)
+    # i = 0
+    # for wallet in feature_arr:
+    #     print("Actual: " + str(target_arr[i]))
+    #     predict(wallet)
+    #
+    #     i += 1
+    wallet = [844.26, 1093.71, 704785.63, 721, 89, 40, 0, 45.80679, 6.589513, 0, 31.22, 1.200681, 810, 865.6910932, 586.4666748, -279.2244185]
+    predict(wallet)
 
 
 def main():
     # initial_training()
-    refined_training()
+    # refined_training()
     refined_training_lessERC()
+    pass
 
 
 if __name__ == "__main__":

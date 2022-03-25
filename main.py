@@ -50,10 +50,12 @@ def results():
             data, headings, val = dp.get_data(address)
         else:
             data, headings, val = dp.get_data(address)
-            if rf.predict(data):
+            print(data)
+            prediction = rf.predict(data)
+            if prediction == 1:
                 print("ADDRESS IS: " + address)
                 print("Fraud")
-            else:
+            elif prediction == 0:
                 print("ADDRESS IS: " + address)
                 print("Not Fraud")
 
@@ -69,6 +71,12 @@ def results():
                     val[i].update({"timeStamp": value})
             i += 1
         return render_template('table.html', headings=headings, result=val)
+
+
+@app.route('/Diagnostic', methods=['GET'])
+def diagnostic():
+    rf.diagnostics()
+    return render_template("index.html")
 
 
 if __name__ == "__main__":

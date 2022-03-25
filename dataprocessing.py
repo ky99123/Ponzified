@@ -17,9 +17,9 @@ def get_data(address):
     txn_req = requests.get(
         "https://api.etherscan.io/api?module=account&action=txlist&address="
         + address + "&startblock=0&endblock=99999999&page=1&offset=50&sort"
-                    "=desc&tag=latest&apikey=" + apikey).json()
-    txn_data = txn_req["result"]
-
+                    "=desc&tag=latest&apikey=" + apikey)
+    txn_data = txn_req.json()["result"]
+    print(txn_data)
     # Get Balance Data
     balance_req = requests.get(
         "https://api.etherscan.io/api?module=account&action=balance&address="
@@ -42,7 +42,7 @@ def get_data(address):
         first_last_time_diff = get_time_between_txn(txn_data, address)
 
     # Get Ether Balance
-    total_ether_balance = balance_data
+    total_ether_balance = int(balance_data)
 
     # Assemble Data into list
     data = [avg_time_between_sent_tnx, avg_time_between_received_tnx,
@@ -79,6 +79,8 @@ def get_txn_data(transactions, address):
     min_received = min(received_txn_values)
     max_received = max(received_txn_values)
     total_ether_received = sum(received_txn_values)
+    print(type(total_ether_received))
+    print("Total Ether received: " + str(total_ether_received))
     avg_received = total_ether_received/len(received_txn_values)
 
     received_address = list(set(received_address))
@@ -101,6 +103,10 @@ def get_time_between_txn(transactions, address):
             received_timestamps.append(int(txn['timeStamp']))
             all_timestamps.append(int(txn['timeStamp']))
 
+    print("Sent_TS" + str(sent_timestamps))
+    print("Ordered_Sent_TS " + str(sent_timestamps.sort()))
+    print("received_TS" + str(received_timestamps))
+
     prev_sent_time = prev_received_time = None
     sent_time_diff = received_time_diff = 0
 
@@ -110,8 +116,12 @@ def get_time_between_txn(transactions, address):
         else:
             sent_time_diff += timestamp - prev_sent_time
             prev_sent_time = timestamp
-
-        avg_time_between_sent_tnx = (sent_time_diff / len(sent_timestamps)-1)/60
+        if len(sent_timestamps) > 1:
+            avg_time_between_sent_tnx = round(
+                (sent_time_diff / (len(sent_timestamps)-1)) / 60,
+                2)
+        elif len(sent_timestamps) == 1:
+            avg_time_between_sent_tnx = 0
 
     for timestamp in received_timestamps:
         if prev_received_time is None:
@@ -120,9 +130,15 @@ def get_time_between_txn(transactions, address):
             received_time_diff += timestamp - prev_received_time
             prev_received_time = timestamp
 
-        avg_time_between_received_tnx = (received_time_diff / len(received_timestamps) - 1)/60
+        if len(received_timestamps) > 1:
+            avg_time_between_received_tnx = round(
+                (received_time_diff / (len(received_timestamps) - 1)) / 60,
+                2)
+        elif len(received_timestamps) == 1:
+            avg_time_between_received_tnx = 0
 
     all_timestamps.sort()
-    first_last_time_diff = (all_timestamps[-1] - all_timestamps[0])/60
+    first_last_time_diff = round((all_timestamps[-1] - all_timestamps[0])/60, 2)
+    print(first_last_time_diff)
 
     return avg_time_between_sent_tnx, avg_time_between_received_tnx, first_last_time_diff
