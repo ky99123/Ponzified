@@ -55,6 +55,7 @@ def results():
             data, headings, val = dp.get_data(address)
             print(data)
             prediction = rf.predict(data)
+            fraudval = prediction
             if prediction == 1:
                 print("ADDRESS IS: " + address)
                 print("Fraud")
@@ -82,7 +83,7 @@ def results():
                     value = int(value)/1000000000
                     val[i].update({"gasPrice": value})
             i += 1
-        return render_template('table_TEST.html', headings=headings, result=val, fraud=fraudval)
+        return render_template('table.html', headings=headings, result=val, fraud=fraudval)
 
 
 @app.route('/Diagnostic', methods=['GET'])

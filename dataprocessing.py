@@ -61,37 +61,48 @@ def get_txn_data(transactions, address):
     received_address = []
 
     for txn in transactions:
+        print("To: {}, From: {}, Address: {}".format(txn['to'], txn['from'], address))
         if txn['from'] == address:
             sent_count += 1
-            sent_txn_values.append(int(txn['value']))
+            if txn['value'] is not None:
+                sent_txn_values.append(int(txn['value']))
+            else:
+                sent_txn_values.append(0)
 
         elif txn['to'] == address:
             received_count += 1
-            received_txn_values.append(int(txn['value']))
+            if txn['value'] is not None:
+                received_txn_values.append(int(txn['value']))
+            else:
+                received_txn_values.append(0)
             received_address.append(txn['from'])
 
-    try:
-        min_sent = min(sent_txn_values)
-        max_sent = max(sent_txn_values)
-        total_ether_sent = sum(sent_txn_values)
-        avg_sent = total_ether_sent/len(sent_txn_values)
+    print("Received addresses :" + str(received_address))
+    print("sent vals: " + str(sent_txn_values))
+    if len(sent_txn_values) == 0:
+        sent_txn_values = [0]
+    min_sent = min(sent_txn_values)
+    max_sent = max(sent_txn_values)
+    total_ether_sent = sum(sent_txn_values)
+    avg_sent = total_ether_sent/len(sent_txn_values)
 
+    if len(received_txn_values) == 0:
+        received_txn_values = [0]
+    min_received = min(received_txn_values, default=0)
+    max_received = max(received_txn_values, default=0)
+    total_ether_received = sum(received_txn_values)
+    print(type(total_ether_received))
+    print("Total Ether received: " + str(total_ether_received))
+    avg_received = total_ether_received/len(received_txn_values)
 
-        min_received = min(received_txn_values)
-        max_received = max(received_txn_values)
-        total_ether_received = sum(received_txn_values)
-        print(type(total_ether_received))
-        print("Total Ether received: " + str(total_ether_received))
-        avg_received = total_ether_received/len(received_txn_values)
-
-        received_address = list(set(received_address))
-        return sent_count, min_sent, max_sent, avg_sent, total_ether_sent, \
+    print("does this break")
+    received_address = list(set(received_address))
+    print("not broken yet")
+    print(received_address)
+    return sent_count, min_sent, max_sent, avg_sent, total_ether_sent, \
         received_count, min_received, max_received, avg_received, total_ether_received, \
         len(received_address)
-    except Exception:
-        pass
     
-
 
 def get_time_between_txn(transactions, address):
     sent_timestamps = []
