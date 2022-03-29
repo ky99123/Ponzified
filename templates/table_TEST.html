@@ -1,0 +1,165 @@
+{% extends "base.html" %}
+
+{% block body %}
+
+<body>
+	<section class="cd-h-timeline js-cd-h-timeline margin-bottom-md">
+  
+	  <div class="cd-h-timeline__container container">
+		<div class="cd-h-timeline__dates">
+		  <div class="cd-h-timeline__line">
+			  
+			<ol>
+				{% for i in result %}
+        {% if loop.first %}
+				{% for key, value in i.items() %}
+
+        		{% if key == "timeStamp"%}
+            <li><a href="#0" data-date="16/01/2014" class="cd-h-timeline__date cd-h-timeline__date--selected">{{value}}</a></li>
+            {% endif %}
+            {% endfor %}
+            {% endif %}
+            {% endfor %}
+            {% for i in result[1:] %}
+        {% for key, value in i.items() %}
+        {% if key == "timeStamp"%}
+            <li><a href="#0" data-date="16/01/2014" class="cd-h-timeline__date">{{value}}</a></li>
+            {%endif%}
+            {% endfor %}
+				{% endfor %}
+			</ol>
+  
+			<span class="cd-h-timeline__filling-line" aria-hidden="true"></span>
+		  </div> <!-- .cd-h-timeline__line -->
+		</div> <!-- .cd-h-timeline__dates -->
+		  
+		<ul>
+		  <li><a href="#0" class="text-replace cd-h-timeline__navigation cd-h-timeline__navigation--prev cd-h-timeline__navigation--inactive">Prev</a></li>
+		  <li><a href="#0" class="text-replace cd-h-timeline__navigation cd-h-timeline__navigation--next">Next</a></li>
+		</ul>
+	  </div> <!-- .cd-h-timeline__container -->
+    
+    <div class="cd-h-timeline__events">
+      <ol>
+        {% for i in result %}
+        {% if loop.first %}
+				
+        <li class="cd-h-timeline__event cd-h-timeline__event--selected text-component">
+        <div class="cd-h-timeline__event-content container">
+          <h2 class="cd-h-timeline__event-title">{{i.timeStamp}}</h2>
+          <em class="cd-h-timeline__event-date">From Address: {{i.from}}</em>
+          <em class="cd-h-timeline__event-date">To Address: {{i.to}}</em>
+          <p class="cd-h-timeline__event-description color-contrast-medium">Amount of Ether transferred: {{i.value}}</p>
+          <p class="cd-h-timeline__event-description color-contrast-medium">Transaction Fee (in Ether): {{(i.gasPrice|int/1000000000)*(i.gas|int)}}</p>
+        </div>
+        </li>
+        {%endif%}
+        {%endfor%}
+      
+        {% for i in result[1:] %}
+				
+        <li class="cd-h-timeline__event text-component">
+        <div class="cd-h-timeline__event-content container">     
+          <h2 class="cd-h-timeline__event-title">{{i.timeStamp}}</h2>
+          <em class="cd-h-timeline__event-date">Transaction From {{i.from}} To {{i.to}}</em>
+          <p class="cd-h-timeline__event-description color-contrast-medium">Affected Block Number: {{i.blockNumber}}</p>
+          <p class="cd-h-timeline__event-description color-contrast-medium">Transaction Gas Size: {{i.gasPrice}}</p>
+          {%endfor%}
+        </div>
+        </li>
+      </ol>
+      </div> <!-- .cd-h-timeline__events -->
+	</section>
+	<script src="{{ url_for('static', filename='js/util.js') }}"></script>
+	<script src="{{ url_for('static', filename='js/swipe-content.js') }}"></script>
+	<script src="{{ url_for('static', filename='js/main.js') }}"></script>
+  </body>
+
+  {% block content %}
+<div style="overflow-x:auto" class="table-responsive-sm fixTableHead">
+  <table id="data" class="table table-hover"> 
+        {%set ns=namespace(t=0)%} 
+        {%for header in headings%}
+        <th onclick="sortTable('{{ ns.t }}')">{{header}}</th>
+        {% set ns.t = ns.t + 1%}     
+        {% endfor %}
+      
+    <tbody>
+      {% for i in result %}
+      <tr>
+      {% for key, value in i.items() %}
+
+        {% if value == ""%}
+        <td> - </td>
+        {%else%}
+        <td> {{ value}} </td>
+        {%endif%}
+        {% endfor %}</tr>
+        {% endfor %}      
+    </tbody>
+  </table>
+</div>
+{% endblock %}
+{% block scripts %}
+<script>
+  function sortTable(n) {
+  
+    var table, rows, switching, i, x, y, shouldSwitch, dir, switchcount = 0;
+    table = document.getElementById("data");
+    switching = true;
+    //Set the sorting direction to ascending:
+    dir = "asc"; 
+    /*Make a loop that will continue until
+    no switching has been done:*/
+    while (switching) {
+      //start by saying: no switching is done:
+      switching = false;
+      rows = table.rows;
+      /*Loop through all table rows (except the
+      first, which contains table headers):*/
+      for (i = 1; i < (rows.length - 1); i++) {
+        //start by saying there should be no switching:
+        shouldSwitch = false;
+        
+        x = rows[i].getElementsByTagName("TD")[n];
+        y = rows[i + 1].getElementsByTagName("TD")[n];
+        /*check if the two rows should switch place,
+        based on the direction, asc or desc:*/
+        if (dir == "asc") {
+          if (Number(x.innerHTML) > Number(y.innerHTML)) {
+            //if so, mark as a switch and break the loop:
+            shouldSwitch= true;
+            break;
+          }
+        } else if (dir == "desc") {
+          if (Number(x.innerHTML) < Number(y.innerHTML)) {
+            //if so, mark as a switch and break the loop:
+            shouldSwitch = true;
+            break;
+          }
+        }
+      }
+      if (shouldSwitch) {
+        /*If a switch has been marked, make the switch
+        and mark that a switch has been done:*/
+        rows[i].parentNode.insertBefore(rows[i + 1], rows[i]);
+        switching = true;
+        //Each time a switch is done, increase this count by 1:
+        switchcount ++;      
+      } else {
+        /*If no switching has been done AND the direction is "asc",
+        set the direction to "desc" and run the while loop again.*/
+        if (switchcount == 0 && dir == "asc") {
+          dir = "desc";
+          switching = true;
+        }
+      }
+    }
+    test = n
+    window.alert(test);
+  }
+  </script>
+  
+{% endblock %}
+
+{% endblock %}
