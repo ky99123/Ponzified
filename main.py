@@ -49,10 +49,10 @@ def results():
             print("ADDRESS IS: " + address)
             print("Fraud")
             fraudval = True
-            data, headings, val = dp.get_data(address)
+            data, headings, val, graphdeets = dp.get_data(address)
         else:
             print("In ML ")
-            data, headings, val = dp.get_data(address)
+            data, headings, val,graphdeets = dp.get_data(address)
             print(data)
             prediction = rf.predict(data)
             fraudval = prediction
@@ -83,7 +83,7 @@ def results():
                     value = int(value)/1000000000
                     val[i].update({"gasPrice": value})
             i += 1
-        return render_template('table.html', headings=headings, result=val, fraud=fraudval)
+        return render_template('table.html', headings=headings, result=val, fraud=fraudval, graphdata=graphdeets)
 
 
 @app.route('/Diagnostic', methods=['GET'])

@@ -61,9 +61,10 @@
         <li class="cd-h-timeline__event text-component">
         <div class="cd-h-timeline__event-content container">     
           <h2 class="cd-h-timeline__event-title">{{i.timeStamp}}</h2>
-          <em class="cd-h-timeline__event-date">Transaction From {{i.from}} To {{i.to}}</em>
-          <p class="cd-h-timeline__event-description color-contrast-medium">Affected Block Number: {{i.blockNumber}}</p>
-          <p class="cd-h-timeline__event-description color-contrast-medium">Transaction Gas Size: {{i.gasPrice}}</p>
+          <em class="cd-h-timeline__event-date">From Address: {{i.from}}</em>
+          <em class="cd-h-timeline__event-date">To Address: {{i.to}}</em>
+          <p class="cd-h-timeline__event-description color-contrast-medium">Amount of Ether transferred: {{i.value}}</p>
+          <p class="cd-h-timeline__event-description color-contrast-medium">Transaction Fee (in Ether): {{(i.gasPrice|int/1000000000)*(i.gas|int)}}</p>
           {%endfor%}
         </div>
         </li>
@@ -99,7 +100,57 @@
     </tbody>
   </table>
 </div>
+<p></p>
+<p> </p>
+<p> </p>
+<p> </p>
+<p> </p>
+
+<div>
+  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    
+    <canvas id="myChart" height="80%"></canvas>
+
+<script>
+const ctx = document.getElementById('myChart').getContext('2d');
+// Bar chart
+console.log(typeof '{{graphdata}}')
+var object = '{{graphdata}}'; 
+console.log(object)
+var wordsArray = object.split([,]);
+
+console.log(typeof wordsArray);
+console.log(wordsArray);
+var stars = [135850, 52122];
+console.log(stars);
+new Chart(document.getElementById("myChart"), {
+    type: 'bar',
+    data: {
+      labels: ["Avg Received Transactions", "Avg Sent Transactions"],
+      datasets: [
+        {
+          label: ['red'],
+          backgroundColor: ["#3e95cd", "#8e5ea2","#3cba9f","#e8c3b9","#c45850"],
+          data: stars
+        }
+      ]
+    },
+    options: {
+      legend: { display: false ,
+      title: {
+        display: true,
+        text: 'Predicted world population (millions) in 2050'
+      }
+    }
+  }
+});
+
+</script>
+
+      </div>
 {% endblock %}
+
+
 {% block scripts %}
 <script>
   function sortTable(n) {
