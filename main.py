@@ -51,6 +51,7 @@ def results():
             fraudval = True
             data, headings, val = dp.get_data(address)
         else:
+            print("In ML ")
             data, headings, val = dp.get_data(address)
             print(data)
             prediction = rf.predict(data)
