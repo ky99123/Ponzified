@@ -32,7 +32,7 @@ def is_blacklisted(address):
 
 @app.route('/', methods=['POST', 'GET'])  # parse url string of our application
 def index():
-    return render_template('index.html')
+    return render_template('index.html') #change back to index
   
 
 @app.route('/charts/', methods=['GET'])
@@ -42,22 +42,27 @@ def charts():
 
 @app.route('/Results/', methods=['POST', 'GET'])
 def results():
+    fraudval = False
     if request.method == 'POST':
         address = request.form.get('Wallet Address')
         if is_blacklisted(address):
             print("ADDRESS IS: " + address)
             print("Fraud")
+            fraudval = True
             data, headings, val = dp.get_data(address)
         else:
+            print("In ML ")
             data, headings, val = dp.get_data(address)
             print(data)
             prediction = rf.predict(data)
             if prediction == 1:
                 print("ADDRESS IS: " + address)
                 print("Fraud")
+                fraudval = True
             elif prediction == 0:
                 print("ADDRESS IS: " + address)
                 print("Not Fraud")
+                fraudval = False
 
         i = 0
         while i < len(val):
@@ -69,8 +74,15 @@ def results():
                                              time.localtime(int(value)))
                     value = value.replace(value, time_str)
                     val[i].update({"timeStamp": value})
+                if key == "value":
+                    value = int(value)/1000000000000000000
+                    val[i].update({"value": value})
+                
+                if key == "gasPrice":
+                    value = int(value)/1000000000
+                    val[i].update({"gasPrice": value})
             i += 1
-        return render_template('table.html', headings=headings, result=val)
+        return render_template('table_TEST.html', headings=headings, result=val, fraud=fraudval)
 
 
 @app.route('/Diagnostic', methods=['GET'])
