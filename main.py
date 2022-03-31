@@ -40,6 +40,15 @@ def charts():
     return render_template('charts.html')
 
 
+@app.route('/Netgraph/', methods=['GET'])
+def netgraph():
+    print("In Netgraph")
+    args = request.args
+    address = args.get("add")
+    print(address)
+    return render_template('netgraph.html', address=address)
+
+
 @app.route('/Results/', methods=['POST', 'GET'])
 def results():
     fraudval = False
@@ -83,7 +92,7 @@ def results():
                     value = int(value)/1000000000
                     val[i].update({"gasPrice": value})
             i += 1
-        return render_template('table.html', headings=headings, result=val, fraud=fraudval)
+        return render_template('table.html', headings=headings, result=val, fraud=fraudval, NGLink="/Netgraph/?add="+address)
 
 
 @app.route('/Diagnostic', methods=['GET'])
