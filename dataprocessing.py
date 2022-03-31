@@ -16,7 +16,7 @@ def get_data(address):
     # Get Transaction Data
     txn_req = requests.get(
         "https://api.etherscan.io/api?module=account&action=txlist&address="
-        + address + "&startblock=0&endblock=99999999&page=1&offset=50&sort"
+        + address + "&startblock=0&endblock=99999999&page=1&offset=200&sort"
                     "=desc&tag=latest&apikey=" + apikey)
     txn_data = txn_req.json()["result"]
     print(txn_data)
@@ -51,7 +51,9 @@ def get_data(address):
             max_received, avg_received, min_sent, max_sent, avg_sent,
             sent_count+received_count, total_ether_sent, total_ether_received,
             total_ether_balance]
-    return data, headings, txn_data
+
+    graphdict = [sent_count, received_count]
+    return data, headings, txn_data,graphdict
 
 
 def get_txn_data(transactions, address):

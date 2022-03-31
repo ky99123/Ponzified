@@ -61,9 +61,10 @@
         <li class="cd-h-timeline__event text-component">
         <div class="cd-h-timeline__event-content container">     
           <h2 class="cd-h-timeline__event-title">{{i.timeStamp}}</h2>
-          <em class="cd-h-timeline__event-date">Transaction From {{i.from}} To {{i.to}}</em>
-          <p class="cd-h-timeline__event-description color-contrast-medium">Affected Block Number: {{i.blockNumber}}</p>
-          <p class="cd-h-timeline__event-description color-contrast-medium">Transaction Gas Size: {{i.gasPrice}}</p>
+          <em class="cd-h-timeline__event-date">From Address: {{i.from}}</em>
+          <em class="cd-h-timeline__event-date">To Address: {{i.to}}</em>
+          <p class="cd-h-timeline__event-description color-contrast-medium">Amount of Ether transferred: {{i.value}}</p>
+          <p class="cd-h-timeline__event-description color-contrast-medium">Transaction Fee (in Ether): {{(i.gasPrice|int/1000000000)*(i.gas|int)}}</p>
           {%endfor%}
         </div>
         </li>
@@ -76,6 +77,7 @@
   </body>
 
   {% block content %}
+<!--  <button type="button" class="collapsible">Show/Hide Table</button>-->
 <div style="overflow-x:auto" class="table-responsive-sm fixTableHead">
   <table id="data" class="table table-hover"> 
         {%set ns=namespace(t=0)%} 
@@ -99,11 +101,85 @@
     </tbody>
   </table>
 </div>
+
+
+<div class="chart-container" style="position: centre; height:40vh; width:80vw">
+  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    
+    <canvas id="myChart"></canvas>
+
+<script>
+const ctx = document.getElementById('myChart').getContext('2d');
+// Bar chart
+console.log(typeof '{{graphdata}}')
+var object = '{{graphdata}}'; 
+console.log(object)
+var myArray = object.split(/[ \,\[\]]/);
+var graphArray = []
+console.log(myArray);
+for (var i in myArray)
+{
+  
+  if (myArray[i] !== "")
+  {
+    console.log(parseInt(myArray[i]));
+    graphArray.push(parseInt(myArray[i]))
+    console.log(typeof (parseInt(myArray[i])));
+  }
+}
+console.log(typeof graphArray);
+console.log(graphArray);
+var frameworks = ['Sent Transactions', 'Received Transactions'];
+new Chart(document.getElementById("myChart"), {
+    type: 'bar',
+    data: {
+      labels: frameworks,
+      datasets: [
+        {
+          label: ['Values'],
+          data: graphArray
+        }
+      ]
+    },
+    options: {
+      legend: { display: true ,
+      title: {
+        display: true,
+        text: 'Predicted world population (millions) in 2050'
+      }
+    }
+  }
+});
+
+</script>
+
+      </div>
+
 <div>
     <a href='{{NGLink}}' class="btn btn-primary">Explore Network Graph</a>
 </div>
+
 {% endblock %}
+
+
 {% block scripts %}
+<!-- <script>
+  var coll = document.getElementsByClassName("collapsible");
+var i;
+
+for (i = 0; i < coll.length; i++) {
+  coll[i].addEventListener("click", function() {
+    this.classList.toggle("active");
+    var content = this.nextElementSibling;
+    if (content.style.display === "block") {
+      content.style.display = "none";
+    } else {
+      content.style.display = "block";
+    }
+  });
+}
+</script>-->
+
 <script>
   function sortTable(n) {
   
