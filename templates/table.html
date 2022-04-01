@@ -111,13 +111,16 @@
 </div>
 
 <div class="chart-container" style="position: centre; height:40vh; width:80vw">
+<!--    <p>Sent vals: {{graphdata[0]}}</p>-->
+<!--    <p>Sent Hash: {{graphdata[1]}}</p>-->
+<!--    <p>Sent Avg: {{graphdata[2][0]}}</p>-->
     <canvas id="sentTxnChart"></canvas>
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <script>
         var sentVals = {{graphdata[0]}}
-        var sentTSArray = {{graphdata[1]}}
+        var sentTime = {{graphdata[1]|safe}}
         var sentAvg = {{graphdata[2]}}
-        const labels = sentTSArray
+        const labels = sentTime
 
         var data = {
             labels: labels,
@@ -128,7 +131,14 @@
                     backgroundColor: 'rgb(255, 99, 132)',
                     borderColor: 'rgb(255, 99, 132)',
                     data: sentVals,
-                    order: 2,
+                },
+                {
+                    type: 'line',
+                    label: 'Average Ether sent',
+                    backgroundColor: 'rgb()',
+                    borderColor: 'rgb()',
+                    data: sentAvg,
+
                 }
             ]
         };
@@ -136,7 +146,12 @@
         const config = {
             type:'scatter',
             data: data,
-            options:{
+            options: {
+                elements: {
+                    point:{
+                        radius: 0
+                    }
+                }
             }
         };
 

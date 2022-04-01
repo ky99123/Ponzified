@@ -34,8 +34,8 @@ def get_data(address):
     headings = tuple(headings)
 
     # Get Processed Transaction Data
-    sent_count, min_sent, max_sent, avg_sent, total_ether_sent, sent_vals, \
-        received_count, min_received, max_received, avg_received, total_ether_received, received_vals, \
+    sent_count, min_sent, max_sent, avg_sent, total_ether_sent, sent_vals, sent_th, \
+        received_count, min_received, max_received, avg_received, total_ether_received, received_vals, received_th, \
         unique_received_from_address = get_txn_data(txn_data, address)
 
     # Get Processed Timestamp Data
@@ -69,7 +69,7 @@ def get_data(address):
 
     graphdict = [sent_vals[::-1], sent_ts, sent_avg, received_vals[::-1], received_ts, received_avg]
 
-    print(sent_ts)
+    print(sent_th)
 
     return data, headings, txn_data, sent_vals, received_vals, graphdict
 
@@ -78,6 +78,8 @@ def get_txn_data(transactions, address):
     sent_count = received_count = 0
     sent_txn_values = []
     received_txn_values = []
+    sent_th = []
+    received_th = []
     received_address = []
 
     for txn in transactions:
@@ -88,6 +90,7 @@ def get_txn_data(transactions, address):
                 sent_txn_values.append(int(txn['value']))
             else:
                 sent_txn_values.append(0)
+            sent_th.append(txn['hash'])
 
         elif txn['to'] == address:
             received_count += 1
@@ -95,12 +98,14 @@ def get_txn_data(transactions, address):
                 received_txn_values.append(int(txn['value']))
             else:
                 received_txn_values.append(0)
+            received_th.append(txn['hash'])
             received_address.append(txn['from'])
 
     # print("Received addresses :" + str(received_address))
     # print("sent vals: " + str(sent_txn_values))
     if len(sent_txn_values) == 0:
         sent_txn_values = [0]
+        sent_th = [0]
     min_sent = min(sent_txn_values)
     max_sent = max(sent_txn_values)
     total_ether_sent = sum(sent_txn_values)
@@ -108,6 +113,7 @@ def get_txn_data(transactions, address):
 
     if len(received_txn_values) == 0:
         received_txn_values = [0]
+        received_th = [0]
     min_received = min(received_txn_values, default=0)
     max_received = max(received_txn_values, default=0)
     total_ether_received = sum(received_txn_values)
@@ -116,8 +122,8 @@ def get_txn_data(transactions, address):
     avg_received = total_ether_received / len(received_txn_values)
     received_address = list(set(received_address))
 
-    return sent_count, min_sent, max_sent, avg_sent, total_ether_sent, sent_txn_values, \
-        received_count, min_received, max_received, avg_received, total_ether_received, received_txn_values, \
+    return sent_count, min_sent, max_sent, avg_sent, total_ether_sent, sent_txn_values, sent_th, \
+        received_count, min_received, max_received, avg_received, total_ether_received, received_txn_values, received_th, \
         len(received_address)
 
 
@@ -173,24 +179,23 @@ def get_time_between_txn(transactions, address):
     first_last_time_diff = round((all_timestamps[-1] - all_timestamps[0]) / 60, 2)
     # print(first_last_time_diff)
 
-    temp_list = []
+    temp_arr = []
 
     for value in sent_timestamps:
-        print(value)
         time_str = time.strftime('%Y-%m-%d %H:%M',
                                  time.localtime(int(value)))
-        temp_list.append(time_str)
+        temp_arr.append(time_str)
 
-    sent_timestamps = temp_list
+    sent_timestamps = temp_arr
 
-    temp_list = []
+    temp_arr = []
 
     for value in received_timestamps:
         time_str = time.strftime('%Y-%m-%d %H:%M',
                                  time.localtime(int(value)))
-        temp_list.append(time_str)
+        temp_arr.append(time_str)
 
-    received_timestamps = temp_list
+    received_timestamps = temp_arr
 
-    return avg_time_between_sent_tnx, avg_time_between_received_tnx, first_last_time_diff, sent_timestamps[::-1], \
+    return avg_time_between_sent_tnx, avg_time_between_received_tnx, first_last_time_diff, sent_timestamps[::-1],\
         received_timestamps[::-1]
