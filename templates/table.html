@@ -3,6 +3,10 @@
 {% block body %}
 
 <body>
+    <div class="jumbotron text-center">
+        <h2>{{address}} is: </h2>
+        <p class="lead">{{fraud}}</p>
+    </div>
 	<section class="cd-h-timeline js-cd-h-timeline margin-bottom-md">
   
 	  <div class="cd-h-timeline__container container">
@@ -11,21 +15,21 @@
 			  
 			<ol>
 				{% for i in result %}
-        {% if loop.first %}
-				{% for key, value in i.items() %}
+                    {% if loop.first %}
+				        {% for key, value in i.items() %}
 
-        		{% if key == "timeStamp"%}
-            <li><a href="#0" data-date="16/01/2014" class="cd-h-timeline__date cd-h-timeline__date--selected">{{value}}</a></li>
-            {% endif %}
-            {% endfor %}
-            {% endif %}
-            {% endfor %}
-            {% for i in result[1:] %}
-        {% for key, value in i.items() %}
-        {% if key == "timeStamp"%}
-            <li><a href="#0" data-date="16/01/2014" class="cd-h-timeline__date">{{value}}</a></li>
-            {%endif%}
-            {% endfor %}
+        		            {% if key == "timeStamp"%}
+                                <li><a href="#0" data-date="16/01/2014" class="cd-h-timeline__date cd-h-timeline__date--selected">{{value}}</a></li>
+                            {% endif %}
+                        {% endfor %}
+                    {% endif %}
+                {% endfor %}
+                {% for i in result[1:] %}
+                    {% for key, value in i.items() %}
+                        {% if key == "timeStamp"%}
+                            <li><a href="#0" data-date="16/01/2014" class="cd-h-timeline__date">{{value}}</a></li>
+                        {%endif%}
+                    {% endfor %}
 				{% endfor %}
 			</ol>
   
@@ -102,61 +106,90 @@
   </table>
 </div>
 
-
-<div class="chart-container" style="position: centre; height:40vh; width:80vw">
-  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
-    
-    <canvas id="myChart"></canvas>
-
-<script>
-const ctx = document.getElementById('myChart').getContext('2d');
-// Bar chart
-console.log(typeof '{{graphdata}}')
-var object = '{{graphdata}}'; 
-console.log(object)
-var myArray = object.split(/[ \,\[\]]/);
-var graphArray = []
-console.log(myArray);
-for (var i in myArray)
-{
-  
-  if (myArray[i] !== "")
-  {
-    console.log(parseInt(myArray[i]));
-    graphArray.push(parseInt(myArray[i]))
-    console.log(typeof (parseInt(myArray[i])));
-  }
-}
-console.log(typeof graphArray);
-console.log(graphArray);
-var frameworks = ['Sent Transactions', 'Received Transactions'];
-new Chart(document.getElementById("myChart"), {
-    type: 'bar',
-    data: {
-      labels: frameworks,
-      datasets: [
-        {
-          label: ['Values'],
-          data: graphArray
-        }
-      ]
-    },
-    options: {
-      legend: { display: true ,
-      title: {
-        display: true,
-        text: 'Predicted world population (millions) in 2050'
-      }
-    }
-  }
-});
-
-</script>
-
-      </div>
-
 <div>
     <a href='{{NGLink}}' class="btn btn-primary">Explore Network Graph</a>
+</div>
+
+<div class="chart-container" style="position: centre; height:40vh; width:80vw">
+    <canvas id="sentTxnChart"></canvas>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <script>
+        var sentVals = {{graphdata[0]}}
+        var sentTSArray = {{graphdata[1]}}
+        var sentAvg = {{graphdata[2]}}
+        const labels = sentTSArray
+
+        var data = {
+            labels: labels,
+            datasets: [
+                {
+                    type: 'bar',
+                    label : 'Value of Ether sent',
+                    backgroundColor: 'rgb(255, 99, 132)',
+                    borderColor: 'rgb(255, 99, 132)',
+                    data: sentVals,
+                    order: 2,
+                }
+            ]
+        };
+
+        const config = {
+            type:'scatter',
+            data: data,
+            options:{
+            }
+        };
+
+        const sentTxnChart = new Chart(
+            document.getElementById('sentTxnChart'),
+            config
+        );
+    </script>
+
+<!--    <script>-->
+<!--        const ctx = document.getElementById('chart1').getContext('2d');-->
+<!--        console.log("Plotting Chart")-->
+<!--        console.log(typeof '{{graphdata}}')-->
+<!--        var object = '{{graphdata}}';-->
+<!--        console.log(object)-->
+<!--        var myArray = object.split(/[ \,\[\]]/);-->
+<!--        var graphArray = []-->
+<!--        console.log(myArray);-->
+<!--        for (var i in myArray)-->
+<!--        {-->
+
+<!--          if (myArray[i] !== "")-->
+<!--          {-->
+<!--            console.log(parseInt(myArray[i]));-->
+<!--            graphArray.push(parseInt(myArray[i]))-->
+<!--            console.log(typeof (parseInt(myArray[i])));-->
+<!--          }-->
+<!--        }-->
+<!--        console.log(typeof graphArray);-->
+<!--        console.log(graphArray);-->
+<!--        var frameworks = ['Sent Transactions', 'Received Transactions'];-->
+<!--        new Chart(document.getElementById("myChart"), {-->
+<!--            type: 'bar',-->
+<!--            data: {-->
+<!--              labels: frameworks,-->
+<!--              datasets: [-->
+<!--                {-->
+<!--                  label: ['Values'],-->
+<!--                  data: graphArray-->
+<!--                }-->
+<!--              ]-->
+<!--            },-->
+<!--            options: {-->
+<!--              legend: { display: true ,-->
+<!--              title: {-->
+<!--                display: true,-->
+<!--                text: 'Predicted world population (millions) in 2050'-->
+<!--              }-->
+<!--            }-->
+<!--          }-->
+<!--        });-->
+
+<!--    </script>-->
 </div>
 
 {% endblock %}

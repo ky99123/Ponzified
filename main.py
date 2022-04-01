@@ -51,28 +51,26 @@ def netgraph():
 
 @app.route('/Results/', methods=['POST', 'GET'])
 def results():
-    fraudval = False
     if request.method == 'POST':
         address = request.form.get('Wallet Address')
         if is_blacklisted(address):
             print("ADDRESS IS: " + address)
             print("Fraud")
-            fraudval = True
-            data, headings, val, graphdeets = dp.get_data(address)
+            fraud_val = "Fraudulent"
+            data, headings, val, sent_val, received_val, graphdeets = dp.get_data(address)
         else:
             print("In ML ")
-            data, headings, val,graphdeets = dp.get_data(address)
-            print(data)
+            data, headings, val, sent_val, received_val, graphdeets = dp.get_data(address)
             prediction = rf.predict(data)
-            fraudval = prediction
+            fraud_val = prediction
             if prediction == 1:
                 print("ADDRESS IS: " + address)
                 print("Fraud")
-                fraudval = True
+                fraud_val = "Fraudulent"
             elif prediction == 0:
                 print("ADDRESS IS: " + address)
                 print("Not Fraud")
-                fraudval = False
+                fraud_val = "Not Fraudulent"
 
         i = 0
         while i < len(val):
@@ -92,7 +90,8 @@ def results():
                     value = int(value)/1000000000
                     val[i].update({"gasPrice": value})
             i += 1
-        return render_template('table.html', headings=headings, result=val, fraud=fraudval, graphdata=graphdeets,NGLink="/Netgraph/?add="+address)
+        return render_template('table.html', headings=headings, result=val, fraud=fraud_val, graphdata=graphdeets,
+                               address=address.lower(), NGLink="/Netgraph/?add="+address)
 
 
 @app.route('/Diagnostic', methods=['GET'])

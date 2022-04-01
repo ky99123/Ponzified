@@ -138,21 +138,21 @@ def refined_training():
     train_final_model(feature_arr, target_arr)
 
 
-def refined_training_lessERC():
+def refined_training_less_erc():
     feature_file = "transaction_dataset_clean_FS_lessERC.csv"
     target_file = "transaction_dataset_target.csv"
 
     feature_df, feature_arr, target_arr = import_data(feature_file, target_file)
     print("Training Final Model without ERC")
-    Final_Model = train_final_model(feature_arr, target_arr)
-    dump(Final_Model, 'Final.joblib')
+    final_model = train_final_model(feature_arr, target_arr)
+    dump(final_model, 'Final.joblib')
 
 
 def predict(predict_data_array):
     model = load('Final.joblib')
     input_data = np.array(predict_data_array)
     ret = model.predict([input_data])[0]
-    print("Predicted Output: " + str(ret))
+    # print("Predicted Output: " + str(ret))
     return ret
 
 
@@ -173,7 +173,7 @@ def diagnostics():
 def main():
     # initial_training()
     # refined_training()
-    refined_training_lessERC()
+    refined_training_less_erc()
     pass
 
 

@@ -1,0 +1,53 @@
+{% block body %}
+
+<div class="chart-container" style="position: centre; height:40vh; width:80vw">
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <canvas id="chart1"></canvas>
+
+    <script>
+        const ctx = document.getElementById('chart1').getContext('2d');
+        // Bar chart
+        console.log(typeof '{{graphdata}}')
+        var object = '{{graphdata}}';
+        console.log(object)
+        var myArray = object.split(/[ \,\[\]]/);
+        var graphArray = []
+        console.log(myArray);
+        for (var i in myArray)
+        {
+
+          if (myArray[i] !== "")
+          {
+            console.log(parseInt(myArray[i]));
+            graphArray.push(parseInt(myArray[i]))
+            console.log(typeof (parseInt(myArray[i])));
+          }
+        }
+        console.log(typeof graphArray);
+        console.log(graphArray);
+        var frameworks = ['Sent Transactions', 'Received Transactions'];
+        new Chart(document.getElementById("myChart"), {
+            type: 'bar',
+            data: {
+              labels: frameworks,
+              datasets: [
+                {
+                  label: ['Values'],
+                  data: graphArray
+                }
+              ]
+            },
+            options: {
+              legend: { display: true ,
+              title: {
+                display: true,
+                text: 'Predicted world population (millions) in 2050'
+              }
+            }
+          }
+        });
+
+    </script>
+</div>
+
+{% endblock %}

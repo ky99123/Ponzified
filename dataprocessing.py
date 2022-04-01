@@ -1,4 +1,5 @@
 import requests
+import time
 
 apikey = "R63INQIAZW9HGVSG83R63M477H4YMXDH6Q"
 
@@ -19,7 +20,7 @@ def get_data(address):
         + address + "&startblock=0&endblock=99999999&page=1&offset=200&sort"
                     "=desc&tag=latest&apikey=" + apikey)
     txn_data = txn_req.json()["result"]
-    print(txn_data)
+    # print(txn_data)
     # Get Balance Data
     balance_req = requests.get(
         "https://api.etherscan.io/api?module=account&action=balance&address="
@@ -33,13 +34,13 @@ def get_data(address):
     headings = tuple(headings)
 
     # Get Processed Transaction Data
-    sent_count, min_sent, max_sent, avg_sent, total_ether_sent, \
-        received_count, min_received, max_received, avg_received, total_ether_received, \
+    sent_count, min_sent, max_sent, avg_sent, total_ether_sent, sent_vals, \
+        received_count, min_received, max_received, avg_received, total_ether_received, received_vals, \
         unique_received_from_address = get_txn_data(txn_data, address)
 
     # Get Processed Timestamp Data
     avg_time_between_sent_tnx, avg_time_between_received_tnx, \
-        first_last_time_diff = get_time_between_txn(txn_data, address)
+        first_last_time_diff, sent_ts, received_ts = get_time_between_txn(txn_data, address)
 
     # Get Ether Balance
     total_ether_balance = int(balance_data)
@@ -49,11 +50,28 @@ def get_data(address):
             first_last_time_diff, sent_count, received_count,
             unique_received_from_address, min_received,
             max_received, avg_received, min_sent, max_sent, avg_sent,
-            sent_count+received_count, total_ether_sent, total_ether_received,
+            sent_count + received_count, total_ether_sent, total_ether_received,
             total_ether_balance]
+    sent_avg = []
+    received_avg = []
 
-    graphdict = [sent_count, received_count]
-    return data, headings, txn_data,graphdict
+    sent_vals = list(map(lambda x: x / 1000000000000000000, sent_vals))
+    received_vals = list(map(lambda x: x / 1000000000000000000, received_vals))
+    for txn in sent_vals:
+        sent_avg.append(avg_sent / 1000000000000000000)
+
+    for txn in received_vals:
+        received_avg.append(avg_received / 1000000000000000000)
+
+    print(type(sent_vals))
+    print("Sent vals:" + str(sent_vals))
+    print("Reversed: " + str(sent_vals[::-1]))
+
+    graphdict = [sent_vals[::-1], sent_ts, sent_avg, received_vals[::-1], received_ts, received_avg]
+
+    print(sent_ts)
+
+    return data, headings, txn_data, sent_vals, received_vals, graphdict
 
 
 def get_txn_data(transactions, address):
@@ -63,7 +81,7 @@ def get_txn_data(transactions, address):
     received_address = []
 
     for txn in transactions:
-        print("To: {}, From: {}, Address: {}".format(txn['to'], txn['from'], address))
+        # print("To: {}, From: {}, Address: {}".format(txn['to'], txn['from'], address))
         if txn['from'] == address:
             sent_count += 1
             if txn['value'] is not None:
@@ -79,32 +97,29 @@ def get_txn_data(transactions, address):
                 received_txn_values.append(0)
             received_address.append(txn['from'])
 
-    print("Received addresses :" + str(received_address))
-    print("sent vals: " + str(sent_txn_values))
+    # print("Received addresses :" + str(received_address))
+    # print("sent vals: " + str(sent_txn_values))
     if len(sent_txn_values) == 0:
         sent_txn_values = [0]
     min_sent = min(sent_txn_values)
     max_sent = max(sent_txn_values)
     total_ether_sent = sum(sent_txn_values)
-    avg_sent = total_ether_sent/len(sent_txn_values)
+    avg_sent = total_ether_sent / len(sent_txn_values)
 
     if len(received_txn_values) == 0:
         received_txn_values = [0]
     min_received = min(received_txn_values, default=0)
     max_received = max(received_txn_values, default=0)
     total_ether_received = sum(received_txn_values)
-    print(type(total_ether_received))
-    print("Total Ether received: " + str(total_ether_received))
-    avg_received = total_ether_received/len(received_txn_values)
-
-    print("does this break")
+    # print(type(total_ether_received))
+    # print("Total Ether received: " + str(total_ether_received))
+    avg_received = total_ether_received / len(received_txn_values)
     received_address = list(set(received_address))
-    print("not broken yet")
-    print(received_address)
-    return sent_count, min_sent, max_sent, avg_sent, total_ether_sent, \
-        received_count, min_received, max_received, avg_received, total_ether_received, \
+
+    return sent_count, min_sent, max_sent, avg_sent, total_ether_sent, sent_txn_values, \
+        received_count, min_received, max_received, avg_received, total_ether_received, received_txn_values, \
         len(received_address)
-    
+
 
 def get_time_between_txn(transactions, address):
     sent_timestamps = []
@@ -120,9 +135,9 @@ def get_time_between_txn(transactions, address):
             received_timestamps.append(int(txn['timeStamp']))
             all_timestamps.append(int(txn['timeStamp']))
 
-    print("Sent_TS" + str(sent_timestamps))
-    print("Ordered_Sent_TS " + str(sent_timestamps.sort()))
-    print("received_TS" + str(received_timestamps))
+    # print("Sent_TS" + str(sent_timestamps))
+    # print("Ordered_Sent_TS " + str(sent_timestamps.sort()))
+    # print("received_TS" + str(received_timestamps))
 
     prev_sent_time = prev_received_time = None
     sent_time_diff = received_time_diff = 0
@@ -135,7 +150,7 @@ def get_time_between_txn(transactions, address):
             prev_sent_time = timestamp
         if len(sent_timestamps) > 1:
             avg_time_between_sent_tnx = round(
-                (sent_time_diff / (len(sent_timestamps)-1)) / 60,
+                (sent_time_diff / (len(sent_timestamps) - 1)) / 60,
                 2)
         elif len(sent_timestamps) == 1:
             avg_time_between_sent_tnx = 0
@@ -155,7 +170,27 @@ def get_time_between_txn(transactions, address):
             avg_time_between_received_tnx = 0
 
     all_timestamps.sort()
-    first_last_time_diff = round((all_timestamps[-1] - all_timestamps[0])/60, 2)
-    print(first_last_time_diff)
+    first_last_time_diff = round((all_timestamps[-1] - all_timestamps[0]) / 60, 2)
+    # print(first_last_time_diff)
 
-    return avg_time_between_sent_tnx, avg_time_between_received_tnx, first_last_time_diff
+    temp_list = []
+
+    for value in sent_timestamps:
+        print(value)
+        time_str = time.strftime('%Y-%m-%d %H:%M',
+                                 time.localtime(int(value)))
+        temp_list.append(time_str)
+
+    sent_timestamps = temp_list
+
+    temp_list = []
+
+    for value in received_timestamps:
+        time_str = time.strftime('%Y-%m-%d %H:%M',
+                                 time.localtime(int(value)))
+        temp_list.append(time_str)
+
+    received_timestamps = temp_list
+
+    return avg_time_between_sent_tnx, avg_time_between_received_tnx, first_last_time_diff, sent_timestamps[::-1], \
+        received_timestamps[::-1]
