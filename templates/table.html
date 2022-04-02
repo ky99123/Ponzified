@@ -115,6 +115,7 @@
 <!--    <p>Sent Hash: {{graphdata[1]}}</p>-->
 <!--    <p>Sent Avg: {{graphdata[2][0]}}</p>-->
     <canvas id="sentTxnChart"></canvas>
+    <canvas id="receivedTxnChart"></canvas>
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <script>
         var sentVals = {{graphdata[0]}}
@@ -160,7 +161,50 @@
             config
         );
     </script>
+    <script>
+        var rVals = {{graphdata[3]}}
+        var rTime = {{graphdata[4]|safe}}
+        var rAvg = {{graphdata[5]}}
+        const rlabels = rTime
 
+        var rdata = {
+            labels: rlabels,
+            datasets: [
+                {
+                    type: 'bar',
+                    label : 'Value of Ether received',
+                    backgroundColor: 'rgb(99, 132, 255)',
+                    borderColor: 'rgb(99, 132, 255)',
+                    data: rVals,
+                },
+                {
+                    type: 'line',
+                    label: 'Average Ether received',
+                    backgroundColor: 'rgb()',
+                    borderColor: 'rgb()',
+                    data: rAvg,
+
+                }
+            ]
+        };
+
+        const rconfig = {
+            type:'scatter',
+            data: rdata,
+            options: {
+                elements: {
+                    point:{
+                        radius: 0
+                    }
+                }
+            }
+        };
+
+        const receivedTxnChart = new Chart(
+            document.getElementById('receivedTxnChart'),
+            rconfig
+        );
+    </script>
 <!--    <script>-->
 <!--        const ctx = document.getElementById('chart1').getContext('2d');-->
 <!--        console.log("Plotting Chart")-->
