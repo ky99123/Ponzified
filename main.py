@@ -124,9 +124,20 @@ dash.layout = html.Div([
     ])
 
 
+@dash.callback(Output('cytoscape', 'elements'),
+                Input('cytoscape', 'tapNodeData'),
+                State('cytoscape', 'elements'))
+def update_elements(data, elements):
+    if data:
+        new_elements = get_netgraph_elements(data['id'])
+        return new_elements
+    else:
+        return elements
+
+
 @flask_app.route('/', methods=['POST', 'GET'])  # parse url string of our application
 def index():
-    return render_template('index.html') # change back to index
+    return render_template('index.html')  # change back to index
   
 
 @flask_app.route('/charts/', methods=['GET'])
