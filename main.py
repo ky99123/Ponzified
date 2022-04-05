@@ -1,24 +1,37 @@
 # from crypt import methods
 from email.policy import default
 from itertools import count
-from flask import Flask, render_template, request, redirect
+
+from dash import Dash, html, dcc
+from flask import Flask, render_template, request, redirect, url_for
 from flask_sqlalchemy import SQLAlchemy
 from sqlalchemy.exc import SQLAlchemyError
 import requests
 import time
 import json
 import math
+import dash_cytoscape as cyto
+from dash.dependencies import Input, Output, State
+from werkzeug.serving import run_simple
+from werkzeug.middleware.dispatcher import DispatcherMiddleware
 
 # Our scripts
 import dataprocessing as dp
 import Model as rf
+import netgraph as ng
 
-app = Flask(__name__)
+# app = Flask(__name__)
+flask_app = Flask(__name__)
+dash_app = Flask('dash')
 # tell the app where our db is
-app.config['SQLALCHEMY_DATABASE_URI'] = 'sqlite:///Test.db'
-db = SQLAlchemy(app)
+# app.config['SQLALCHEMY_DATABASE_URI'] = 'sqlite:///Test.db'
+flask_app.config['SQLALCHEMY_DATABASE_URI'] = 'sqlite:///Test.db'
+db = SQLAlchemy(flask_app)
+# db = SQLAlchemy(app)
 
 apikey = "R63INQIAZW9HGVSG83R63M477H4YMXDH6Q"
+
+dash = Dash(__name__, server=dash_app, routes_pathname_prefix='/', requests_pathname_prefix='/netgraph/')
 
 
 def is_blacklisted(address):
@@ -30,26 +43,113 @@ def is_blacklisted(address):
     return False
 
 
-@app.route('/', methods=['POST', 'GET'])  # parse url string of our application
+def get_netgraph_elements(address):
+    x, y, r, a, b, c = dp.get_data(address)
+    elements = []
+    added_edges = []
+    count_transactions = {}
+
+    for node in r:
+        source = str(node['from'])
+        dest = str(node['to'])
+        uid = source + dest
+        if uid not in count_transactions:
+            count_transactions[uid] = 1
+        elif uid in count_transactions:
+            count_transactions[uid] += 1
+
+    for node in r:
+        source = str(node['from'])
+        dest = str(node['to'])
+        uid = source + dest
+
+        if (source and dest) and (uid not in added_edges):
+            elements.append({'data': {'id': source, 'label': source}})
+            elements.append({'data': {'id': dest, 'label': dest}})
+            if max(count_transactions, key=count_transactions.get) == uid:
+                elements.append(
+                    {'data': {'source': source, 'target': dest, 'label': str(count_transactions[uid]), 'weight': 10},
+                     'classes': 'edge-point'})
+            else:
+                elements.append({'data': {'source': source, 'target': dest, 'label': str(count_transactions[uid])},
+                                 'classes': 'edge-point'})
+            added_edges.append(uid)
+
+    return elements
+
+
+dash.layout = html.Div([
+        html.P("Nodes Information:"),
+        cyto.Cytoscape(
+            id='cytoscape',
+            elements=get_netgraph_elements("0xdb5c43a65e23481b714ef19f462d467d4eb85826"),
+            layout={
+                'name': 'concentric',
+                'avoidOverlap': True,
+                'nodeDimesionsIncludeLabels': True,
+                'spacingFactor': 10,
+                'minNodeSpacing': 10
+            },
+            style={'width': '2000px', 'height': '2000px'},
+            stylesheet=[
+                {
+                    'selector': 'node',
+                    'style': {
+                        'label': 'data(id)'
+                    }
+                },
+                {
+                    'selector': 'edge-point',
+                    'style': {
+                        # The default curve style does not work with certain arrows
+                        'label': 'data(label)',
+                        'curve-style': 'bezier',
+                        'target-arrow-color': 'red',
+                        'target-arrow-shape': 'triangle',
+                        'font-size': '50px',
+                        'text-rotation': 'autorotate',
+                        'text-margin-y': -20
+                        # 'target-arrow-color': 'blue',
+                        # 'target-arrow-shape': 'triangle',
+                    }
+                },
+                {
+                    'selector': '[weight > 9]',
+                    'style': {
+                        'line-color': 'red',
+                    }
+                },
+            ]
+        ),
+    ])
+
+
+@flask_app.route('/', methods=['POST', 'GET'])  # parse url string of our application
 def index():
-    return render_template('index.html') #change back to index
+    return render_template('index.html') # change back to index
   
 
-@app.route('/charts/', methods=['GET'])
+@flask_app.route('/charts/', methods=['GET'])
 def charts():
     return render_template('charts.html')
 
 
-@app.route('/Netgraph/', methods=['GET'])
-def netgraph():
-    print("In Netgraph")
+@flask_app.route('/dashboard/', methods=['GET'])
+# def netgraph():
+#     print("In Netgraph")
+#     args = request.args
+#     address = args.get("add")
+#     print(address)
+#     ng.run_app(address)
+#     return render_template('netgraph.html', address=address)
+def render_netgraph():
+    print("in NG")
     args = request.args
     address = args.get("add")
-    print(address)
-    return render_template('netgraph.html', address=address)
+    return redirect('/netgraph/?add={}'.format(address), code=307)
 
 
-@app.route('/Results/', methods=['POST', 'GET'])
+@flask_app.route('/Results/', methods=['POST', 'GET'])
 def results():
     if request.method == 'POST':
         address = request.form.get('Wallet Address')
@@ -91,14 +191,26 @@ def results():
                     val[i].update({"gasPrice": value})
             i += 1
         return render_template('table.html', headings=headings, result=val, fraud=fraud_val, graphdata=graphdeets,
-                               address=address.lower(), NGLink="/Netgraph/?add="+address)
+                               address=address.lower(), NGLink="/dashboard/?add="+address)
 
 
-@app.route('/Diagnostic', methods=['GET'])
+@flask_app.route('/Diagnostic', methods=['GET'])
 def diagnostic():
     rf.diagnostics()
     return render_template("index.html")
 
 
+@dash_app.route('/', methods=['GET'])
+def show_networkgraph():
+    args = request.args
+    address = args.get("add")
+    dash.run_server(address)
+
+
+main_app = DispatcherMiddleware(flask_app, {
+    '/netgraph': dash_app
+})
+
 if __name__ == "__main__":
-    app.run(debug=True)   # debug true means error show up on the site
+    # server.run(debug=True)   # debug true means error show up on the site
+    run_simple('0.0.0.0', 8080, main_app, use_reloader=True, use_debugger=True)
