@@ -80,23 +80,69 @@ def get_netgraph_elements(address):
 
 
 def init_dash(address):
+    alert = html.Div(
+        [
+            dbc.Alert(
+                "That was an invalid address!",
+                color="warning",
+                id="alert-auto",
+                is_open=False,
+                duration=5000,
+            ),
+        ]
+    )
+
+    search_bar = dbc.Row(
+        [
+            dbc.Col(dbc.Input(type="search", placeholder="Search")),
+            dbc.Col(
+                dbc.Button(
+                    "Search", color="primary", id='searchbtn', className="ms-2", n_clicks=0
+                ),
+                width="auto",
+            ),
+        ],
+        className="g-0 ms-auto flex-nowrap mt-3 mt-md-0",
+        align="center",
+    )
+
+    PLOTLY_LOGO = "https://images.plot.ly/logo/new-branding/plotly-logomark.png"
+
+    navbar = dbc.Navbar(
+        dbc.Container(
+            [
+                html.A(
+                    # Use row and col to control vertical alignment of logo /
+                    # brand
+                    dbc.Row(
+                        [
+                            dbc.Col(html.Img(src=PLOTLY_LOGO, height="30px")),
+                            dbc.Col(
+                                dbc.NavbarBrand("Ponzified", className="ms-2")),
+                        ],
+                        align="center",
+                        className="g-0",
+                    ),
+                    href="http://127.0.0.1:8080",
+                    style={"textDecoration": "none"},
+                ),
+                dbc.NavbarToggler(id="navbar-toggler", n_clicks=0),
+                dbc.Collapse(
+                    search_bar,
+                    id="navbar-collapse",
+                    is_open=False,
+                    navbar=True,
+                ),
+            ]
+        ),
+        color="dark",
+        dark=True,
+    )
+
     dash.layout = dbc.Container(
         children=[
-            dbc.Navbar(
-                dbc.Container(
-                    html.A(
-                        dbc.Row(
-                            dbc.Col(dbc.NavbarBrand('Ponzified', className='ms-2')),
-                            align='centre',
-                            className='g-0',
-                        ),
-                        href="http://127.0.0.1:8080",
-                        style={'textDecoration': 'none'},
-                    )
-                ),
-                color='dark',
-                dark=True,
-            ),
+            navbar,
+            alert,
             html.Div([
 
                 html.P("Nodes Information:"),
@@ -202,6 +248,43 @@ def update_elements(data, elements):
         return new_elements
     else:
         return elements
+
+
+@dash.callback(Input('Search', 'trigger'))
+def search():
+    search_new_address()
+
+
+@dash.callback(Output('cytoscape', 'elements'),
+               Input(component_id='searchbtn', component_property='n_clicks'),
+               State('searchbar', 'value'),
+               State('cytoscape', 'elements'))
+def search_new_address(address, elements):
+    print('searching new address')
+    try:
+        new_elements = get_netgraph_elements(address)
+        return new_elements
+    except:
+        toggle_alert()
+        return elements
+
+
+@dash.callback(
+    Output(component_id='alert-auto', component_property='is_open')
+)
+def toggle_alert():
+    return True
+
+
+@dash.callback(
+    Output("navbar-collapse", "is_open"),
+    [Input("navbar-toggler", "n_clicks")],
+    [State("navbar-collapse", "is_open")],
+)
+def toggle_navbar_collapse(n, is_open):
+    if n:
+        return not is_open
+    return is_open
 
 
 @flask_app.route('/', methods=['POST', 'GET'])  # parse url string of our application
