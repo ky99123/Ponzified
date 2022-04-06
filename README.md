@@ -131,21 +131,25 @@ To get a local copy up and running follow these simple example steps.
 
 On the Main landing page, enter the wallet address you would like to investigate.
 
-<img src="images/landing.png" alt="Landing Page" width="400" height="300">
+<img src="images/landing.png" alt="Landing Page">
 
 In the results page you will see a table. The table can be ordered by clicking on the headers. There are also Bar Charts under the table for visualisation purposes.
 
-<img src="images/table.png" alt="table" width="400" height="300">
+<img src="images/table.png" alt="table">
 
 Between the table and the charts is a button which will lead you to the Netwrok Graph exploration platform.
 
-<img src="images/netgraph.png" alt="Network Graph" width="400" height="300">
+<img src="images/netgraphbtn.png" alt="Network Graph Button">
 
 There, you can will see the addresses that are associated with your original queried address. The arrows denote the direction of Ethereum transfers. the numbers are a count of instances such transactions happened. You can easily find addresses that have frequent transactions with the queried transactions and hence are able to pivot to that address.
 
-<img src="images/searchbar.png" alt="Search Bar" width="400" height="300">
+<img src="images/netgraph.png" alt="Network Graph">
 
 If you decide to investigate another address, feel free to key in or paste another wallet address in the search bar. Bear in mind the chart will not update until a valid address is provided, so if it is not changing, you might want to check your input again!
+
+<img src="images/searchbar.png" alt="Search Bar">
+
+Finally, you can click the icon on the left to return to the landing page.
 
 <p align="right">(<a href="#top">back to top</a>)</p>
 
