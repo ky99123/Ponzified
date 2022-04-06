@@ -1,5 +1,6 @@
 werkzeug
 dash
+dash_cytoscape
 requests
 Flask==2.0.2
 flask-sqlalchemy

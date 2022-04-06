@@ -152,7 +152,6 @@ def predict(predict_data_array):
     model = load('Final.joblib')
     input_data = np.array(predict_data_array)
     ret = model.predict([input_data])[0]
-    # print("Predicted Output: " + str(ret))
     return ret
 
 

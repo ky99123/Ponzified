@@ -1,12 +1,13 @@
-from config import apikey
+# from config import apikey
+from dataprocessing import apikey
 import requests
 from datetime import datetime
-from dash import Dash, html,dcc
+from dash import Dash, html, dcc
 import dash_cytoscape as cyto
 from dash.dependencies import Input, Output,State
-import json 
+import json
 
-app = Dash(__name__)
+dash_app = Dash(__name__)
 
 
 def get_data(address):
@@ -14,12 +15,12 @@ def get_data(address):
     return req['result']
 
 
-
 def get_netgraph_elements(address):
     r = get_data(address)
-    elements =[]
-    added_edges=[]
-    count_transactions={}
+    print(r)
+    elements = []
+    added_edges = []
+    count_transactions = {}
 
     for node in r:
         source = str(node['from'])
@@ -43,13 +44,13 @@ def get_netgraph_elements(address):
             else:
                 elements.append({'data': {'source': source, 'target': dest, 'label': str(count_transactions[uid])},'classes':'edge-point'})
             added_edges.append(uid)
-        
+
 
     return elements
 
 
 def run_app(address):
-    app.layout = html.Div([
+    dash_app.layout = html.Div([
         html.P("Nodes Information:"),
         cyto.Cytoscape(
             id='cytoscape',
@@ -80,8 +81,8 @@ def run_app(address):
                         'font-size': '50px',
                         'text-rotation': 'autorotate',
                         'text-margin-y': -20
-                        #'target-arrow-color': 'blue',
-                        #'target-arrow-shape': 'triangle',
+                        # 'target-arrow-color': 'blue',
+                        # 'target-arrow-shape': 'triangle',
                     }
                 },
                 {
@@ -94,20 +95,23 @@ def run_app(address):
         ),
     ])
 
-    @app.callback(Output('cytoscape', 'elements'),
+    @dash_app.callback(Output('cytoscape', 'elements'),
                 Input('cytoscape', 'tapNodeData'),
                 State('cytoscape', 'elements'))
-    def update_elements(data,elements):
+    def update_elements(data, elements):
         if data:
             new_elements = get_netgraph_elements(data['id'])
             return new_elements
         else:
             return elements
 
-            #run_app(data['id'])
-            
+            # run_app(data['id'])
+
+    dash_app.run_server(debug=False)
+    return
 
 
-    app.run_server(debug=True)
+# run_app("0xdb5c43a65e23481b714ef19f462d467d4eb85826")
 
-run_app("0xdb5c43a65e23481b714ef19f462d467d4eb85826")
+if __name__ == "__main__":
+    get_netgraph_elements('0xdb5c43a65e23481b714ef19f462d467d4eb85826')
