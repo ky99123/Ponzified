@@ -1,6 +1,7 @@
 werkzeug
 dash
 dash_cytoscape
+dash_bootstrap_components
 requests
 Flask==2.0.2
 flask-sqlalchemy

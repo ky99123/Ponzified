@@ -3,6 +3,7 @@ from email.policy import default
 from itertools import count
 
 from dash import Dash, html, dcc
+import dash_bootstrap_components as dbc
 from flask import Flask, render_template, request, redirect, url_for
 from flask_sqlalchemy import SQLAlchemy
 from sqlalchemy.exc import SQLAlchemyError
@@ -31,7 +32,7 @@ db = SQLAlchemy(flask_app)
 
 apikey = "R63INQIAZW9HGVSG83R63M477H4YMXDH6Q"
 
-dash = Dash(__name__, server=dash_app, routes_pathname_prefix='/', requests_pathname_prefix='/netgraph/')
+dash = Dash(__name__, server=dash_app, routes_pathname_prefix='/', requests_pathname_prefix='/netgraph/', external_stylesheets=[dbc.themes.BOOTSTRAP])
 
 
 def is_blacklisted(address):
@@ -79,50 +80,117 @@ def get_netgraph_elements(address):
 
 
 def init_dash(address):
-    dash.layout = html.Div([
-        html.P("Nodes Information:"),
-        cyto.Cytoscape(
-            id='cytoscape',
-            elements=get_netgraph_elements(address),
-            layout={
-                'name': 'concentric',
-                'avoidOverlap': True,
-                'nodeDimesionsIncludeLabels': True,
-                'spacingFactor': 10,
-                'minNodeSpacing': 10
-            },
-            style={'width': '2000px', 'height': '2000px'},
-            stylesheet=[
-                {
-                    'selector': 'node',
-                    'style': {
-                        'label': 'data(id)'
-                    }
-                },
-                {
-                    'selector': 'edge-point',
-                    'style': {
-                        # The default curve style does not work with certain arrows
-                        'label': 'data(label)',
-                        'curve-style': 'bezier',
-                        'target-arrow-color': 'red',
-                        'target-arrow-shape': 'triangle',
-                        'font-size': '50px',
-                        'text-rotation': 'autorotate',
-                        'text-margin-y': -20
-                        # 'target-arrow-color': 'blue',
-                        # 'target-arrow-shape': 'triangle',
-                    }
-                },
-                {
-                    'selector': '[weight > 9]',
-                    'style': {
-                        'line-color': 'red',
-                    }
-                },
-            ]
-        ),
-    ])
+    dash.layout = dbc.Container(
+        children=[
+            dbc.Navbar(
+                dbc.Container(
+                    html.A(
+                        dbc.Row(
+                            dbc.Col(dbc.NavbarBrand('Ponzified', className='ms-2')),
+                            align='centre',
+                            className='g-0',
+                        ),
+                        href="http://127.0.0.1:8080",
+                        style={'textDecoration': 'none'},
+                    )
+                ),
+                color='dark',
+                dark=True,
+            ),
+            html.Div([
+
+                html.P("Nodes Information:"),
+                cyto.Cytoscape(
+                    id='cytoscape',
+                    elements=get_netgraph_elements(address),
+                    layout={
+                        'name': 'concentric',
+                        'avoidOverlap': True,
+                        'nodeDimesionsIncludeLabels': True,
+                        'spacingFactor': 10,
+                        'minNodeSpacing': 10
+                    },
+                    style={'width': '2000px', 'height': '2000px'},
+                    stylesheet=[
+                        {
+                            'selector': 'node',
+                            'style': {
+                                'label': 'data(id)'
+                            }
+                        },
+                        {
+                            'selector': 'edge-point',
+                            'style': {
+                                # The default curve style does not work with
+                                # certain arrows
+                                'label': 'data(label)',
+                                'curve-style': 'bezier',
+                                'target-arrow-color': 'red',
+                                'target-arrow-shape': 'triangle',
+                                'font-size': '50px',
+                                'text-rotation': 'autorotate',
+                                'text-margin-y': -20
+                                # 'target-arrow-color': 'blue',
+                                # 'target-arrow-shape': 'triangle',
+                            }
+                        },
+                        {
+                            'selector': '[weight > 9]',
+                            'style': {
+                                'line-color': 'red',
+                            }
+                        },
+                    ]
+                ),
+            ])
+        ]
+    )
+
+    # dash.layout = html.Div([
+    #
+    #     html.P("Nodes Information:"),
+    #     cyto.Cytoscape(
+    #         id='cytoscape',
+    #         elements=get_netgraph_elements(address),
+    #         layout={
+    #             'name': 'concentric',
+    #             'avoidOverlap': True,
+    #             'nodeDimesionsIncludeLabels': True,
+    #             'spacingFactor': 10,
+    #             'minNodeSpacing': 10
+    #         },
+    #         style={'width': '2000px', 'height': '2000px'},
+    #         stylesheet=[
+    #             {
+    #                 'selector': 'node',
+    #                 'style': {
+    #                     'label': 'data(id)'
+    #                 }
+    #             },
+    #             {
+    #                 'selector': 'edge-point',
+    #                 'style': {
+    #                     # The default curve style does not work with certain arrows
+    #                     'label': 'data(label)',
+    #                     'curve-style': 'bezier',
+    #                     'target-arrow-color': 'red',
+    #                     'target-arrow-shape': 'triangle',
+    #                     'font-size': '50px',
+    #                     'text-rotation': 'autorotate',
+    #                     'text-margin-y': -20
+    #                     # 'target-arrow-color': 'blue',
+    #                     # 'target-arrow-shape': 'triangle',
+    #                 }
+    #             },
+    #             {
+    #                 'selector': '[weight > 9]',
+    #                 'style': {
+    #                     'line-color': 'red',
+    #                 }
+    #             },
+    #         ]
+    #     ),
+    # ])
 
 
 @dash.callback(Output('cytoscape', 'elements'),
