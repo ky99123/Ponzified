@@ -1,10 +1,8 @@
 import numpy as np
 import pandas as pd
 from joblib import dump, load
-import sklearn
 from sklearn.model_selection import train_test_split
 from sklearn.feature_selection import SelectFromModel
-from sklearn.datasets import make_classification
 from sklearn.ensemble import RandomForestClassifier
 from sklearn.metrics import accuracy_score, confusion_matrix, classification_report
 from matplotlib import pyplot as plt
@@ -15,6 +13,12 @@ import seaborn as sns
 
 
 def import_data(feature_file, target_file):
+    """
+    Imports data from data set and pre-processes it
+    :param feature_file:    csv file of features
+    :param target_file:     csv file of targets
+    :return: feature_df, feature_array, target_array
+    """
     feature_df = pd.read_csv(feature_file)
     target_df = pd.read_csv(target_file)
     target_array = target_df.values.ravel()
@@ -28,12 +32,26 @@ def import_data(feature_file, target_file):
 
 
 def split_dataset(feature_df, target_df):
+    """
+    Splits dataset into training and testing data
+    :param feature_df:  Dataframe of features
+    :param target_df:   Dataframe of targets
+    :return: X_train, X_test, y_train, y_test
+    """
     X_train, X_test, y_train, y_test = train_test_split(feature_df, target_df,
                                                         test_size=0.3)
     return X_train, X_test, y_train, y_test
 
 
 def select_features(X_train, y_train, X_test, n_features):
+    """
+    Applies SK-Learn's feature selector to the provided dataset
+    :param X_train:
+    :param y_train:
+    :param X_test:
+    :param n_features:      Max Number of features to be selected
+    :return:
+    """
     fs = SelectFromModel(RandomForestClassifier(n_estimators=1000),
                          max_features=n_features)
     fs.fit(X_train, y_train)
@@ -156,15 +174,6 @@ def predict(predict_data_array):
 
 
 def diagnostics():
-    # feature_file = "transaction_dataset_clean_FS_lessERC.csv"
-    # target_file = "transaction_dataset_target.csv"
-    # feature_df, feature_arr, target_arr = import_data(feature_file, target_file)
-    # i = 0
-    # for wallet in feature_arr:
-    #     print("Actual: " + str(target_arr[i]))
-    #     predict(wallet)
-    #
-    #     i += 1
     wallet = [844.26, 1093.71, 704785.63, 721, 89, 40, 0, 45.80679, 6.589513, 0, 31.22, 1.200681, 810, 865.6910932, 586.4666748, -279.2244185]
     predict(wallet)
 
@@ -172,6 +181,8 @@ def diagnostics():
 def main():
     # initial_training()
     # refined_training()
+
+    # Training process to get finalised model
     refined_training_less_erc()
     pass
 

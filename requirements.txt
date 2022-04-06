@@ -1,3 +1,4 @@
+web3
 werkzeug
 dash
 dash_cytoscape

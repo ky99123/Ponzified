@@ -1,7 +1,4 @@
-# from crypt import methods
-from email.policy import default
-from itertools import count
-from config import secretkey
+# Imports
 from dash import Dash, html, dcc
 import dash_bootstrap_components as dbc
 from flask import Flask, render_template, request, redirect, url_for,flash
@@ -14,18 +11,34 @@ from werkzeug.middleware.dispatcher import DispatcherMiddleware
 from web3 import Web3
 
 # Our scripts
+from config import secretkey
 import dataprocessing as dp
 import Model as rf
 
-# app = Flask(__name__)
+# Constants
+PLOTLY_LOGO = "https://images.plot.ly/logo/new-branding/plotly-logomark.png"
+
+# Initialise main Flask app and
+# Flask app to contain Dash app
 flask_app = Flask(__name__)
 dash_app = Flask('dash')
 flask_app.secret_key = secretkey
 
-dash = Dash(__name__, server=dash_app, routes_pathname_prefix='/', requests_pathname_prefix='/netgraph/', external_stylesheets=[dbc.themes.BOOTSTRAP])
+# Initialise Dash app, contained under the server 'dash_app'
+dash = Dash(__name__,
+            server=dash_app,
+            routes_pathname_prefix='/',
+            requests_pathname_prefix='/netgraph/',
+            external_stylesheets=[dbc.themes.BOOTSTRAP]
+            )
 
 
 def is_blacklisted(address):
+    """
+    Checks if a particular address is known to be Fraudulent
+    :param str address:     Address to check for in blacklist
+    :return:                Boolean of whether the address is in the black list
+    """
     with open('blacklist.json') as blacklist_f:
         blacklist = json.load(blacklist_f)
         for entry in blacklist:
@@ -35,7 +48,13 @@ def is_blacklisted(address):
 
 
 def get_netgraph_elements(address):
-    x, y, r, a, b, c = dp.get_data(address)
+    """
+    Gets all the addresses associated with the provided address
+    :param str address:     Address to explore
+    -----------------------------------------------------------
+    :return elements:       list of elements to plot network graph
+    """
+    r = dp.get_data(address)[2]
     elements = []
     added_edges = []
     count_transactions = {}
@@ -70,40 +89,26 @@ def get_netgraph_elements(address):
 
 
 def init_dash(address):
-    alert = html.Div(
-        [
-            dbc.Alert(
-                "That was an invalid address!",
-                color="warning",
-                id="alert-auto",
-                is_open=False,
-                duration=5000,
-            ),
-        ]
-    )
+    """
+    Initialises Dash Application for rendering of Network graphs
+    :param str address:     Wallet Address to be explored
+    """
 
+    # Define the Markup for the Search Bar
     search_bar = dbc.Row(
         [
-            dbc.Col(dbc.Input(type="search", placeholder="Search")),
-            dbc.Col(
-                dbc.Button(
-                    "Search", color="primary", id='searchbtn', className="ms-2", n_clicks=0
-                ),
-                width="auto",
-            ),
+            dbc.Col(dcc.Input(id='in_address', type='text')),
         ],
         className="g-0 ms-auto flex-nowrap mt-3 mt-md-0",
         align="center",
     )
 
-    PLOTLY_LOGO = "https://images.plot.ly/logo/new-branding/plotly-logomark.png"
-
+    # Define the Markup for the Navigation bar
     navbar = dbc.Navbar(
         dbc.Container(
             [
                 html.A(
-                    # Use row and col to control vertical alignment of logo /
-                    # brand
+                    # Use row and col to control vertical alignment of logo brand
                     dbc.Row(
                         [
                             dbc.Col(html.Img(src=PLOTLY_LOGO, height="30px")),
@@ -113,7 +118,7 @@ def init_dash(address):
                         align="center",
                         className="g-0",
                     ),
-                    href="http://127.0.0.1:8080",
+                    href="http://127.0.0.1:8080",       # Redirects back to landing page
                     style={"textDecoration": "none"},
                 ),
                 dbc.NavbarToggler(id="navbar-toggler", n_clicks=0),
@@ -129,13 +134,14 @@ def init_dash(address):
         dark=True,
     )
 
+    # Defining the layout of the Dash app
     dash.layout = dbc.Container(
         children=[
             navbar,
-            # alert,
             html.Div([
-
                 html.P("Nodes Information:"),
+
+                # Defining the Network Graph built with Dash Cytoscape
                 cyto.Cytoscape(
                     id='cytoscape',
                     elements=get_netgraph_elements(address),
@@ -157,8 +163,7 @@ def init_dash(address):
                         {
                             'selector': 'edge-point',
                             'style': {
-                                # The default curve style does not work with
-                                # certain arrows
+
                                 'label': 'data(label)',
                                 'curve-style': 'bezier',
                                 'target-arrow-color': 'red',
@@ -166,8 +171,6 @@ def init_dash(address):
                                 'font-size': '50px',
                                 'text-rotation': 'autorotate',
                                 'text-margin-y': -20
-                                # 'target-arrow-color': 'blue',
-                                # 'target-arrow-shape': 'triangle',
                             }
                         },
                         {
@@ -182,123 +185,63 @@ def init_dash(address):
         ]
     )
 
-    # dash.layout = html.Div([
-    #
-    #     html.P("Nodes Information:"),
-    #     cyto.Cytoscape(
-    #         id='cytoscape',
-    #         elements=get_netgraph_elements(address),
-    #         layout={
-    #             'name': 'concentric',
-    #             'avoidOverlap': True,
-    #             'nodeDimesionsIncludeLabels': True,
-    #             'spacingFactor': 10,
-    #             'minNodeSpacing': 10
-    #         },
-    #         style={'width': '2000px', 'height': '2000px'},
-    #         stylesheet=[
-    #             {
-    #                 'selector': 'node',
-    #                 'style': {
-    #                     'label': 'data(id)'
-    #                 }
-    #             },
-    #             {
-    #                 'selector': 'edge-point',
-    #                 'style': {
-    #                     # The default curve style does not work with certain arrows
-    #                     'label': 'data(label)',
-    #                     'curve-style': 'bezier',
-    #                     'target-arrow-color': 'red',
-    #                     'target-arrow-shape': 'triangle',
-    #                     'font-size': '50px',
-    #                     'text-rotation': 'autorotate',
-    #                     'text-margin-y': -20
-    #                     # 'target-arrow-color': 'blue',
-    #                     # 'target-arrow-shape': 'triangle',
-    #                 }
-    #             },
-    #             {
-    #                 'selector': '[weight > 9]',
-    #                 'style': {
-    #                     'line-color': 'red',
-    #                 }
-    #             },
-    #         ]
-    #     ),
-    # ])
-
 
 @dash.callback(Output('cytoscape', 'elements'),
-                Input('cytoscape', 'tapNodeData'),
-                State('cytoscape', 'elements'))
-def update_elements(data, elements):
-    if data:
-        new_elements = get_netgraph_elements(data['id'])
-        return new_elements
+               Output('in_address', 'value'),
+               Input('in_address', 'value'),
+               Input('cytoscape', 'tapNodeData'),
+               State('cytoscape', 'elements'))
+def update_elements(in_address, data, elements):
+    """
+    Updates the Network Graph based on existing elements and various Inputs
+    :param str in_address:      Search string within the search bar
+    :param list data:           Data of the existing nodes
+    :param list elements:       State of the elements within the Network Graph
+    ----------------------------------------------------------------------
+    :return:                    Data to populate the network graph and
+    an empty string to clear the search bar
+    """
+    # Checks for valid input in the search bar
+    if in_address:
+        new_data = get_netgraph_elements(in_address)
+        return new_data, ''
     else:
-        return elements
+        # Checks if User has selected an existing node
+        if data:
+            new_elements = get_netgraph_elements(data['id'])
+            return new_elements, ''
+        else:
+            return elements, ''
 
 
-# @dash.callback(Input('Search', 'trigger'))
-# def search():
-#     search_new_address()
+@dash.callback(
+    Output("navbar-collapse", "is_open"),
+    [Input("navbar-toggler", "n_clicks")],
+    [State("navbar-collapse", "is_open")],
+)
+def toggle_navbar_collapse(n, is_open):
+    if n:
+        return not is_open
+    return is_open
 
 
-# @dash.callback(Output('cytoscape', 'elements'),
-#                Input(component_id='searchbtn', component_property='n_clicks'),
-#                State('searchbar', 'value'),
-#                State('cytoscape', 'elements'))
-# def search_new_address(address, elements):
-#     print('searching new address')
-#     try:
-#         new_elements = get_netgraph_elements(address)
-#         return new_elements
-#     except:
-#         toggle_alert()
-#         return elements
-
-
-# @dash.callback(
-#     Output(component_id='alert-auto', component_property='is_open')
-# )
-# def toggle_alert():
-#     return True
-
-
-# @dash.callback(
-#     Output("navbar-collapse", "is_open"),
-#     [Input("navbar-toggler", "n_clicks")],
-#     [State("navbar-collapse", "is_open")],
-# )
-# def toggle_navbar_collapse(n, is_open):
-#     if n:
-#         return not is_open
-#     return is_open
-
-
-@flask_app.route('/', methods=['POST', 'GET'])  # parse url string of our application
+@flask_app.route('/', methods=['POST', 'GET'])
 def index():
-    return render_template('index.html')  # change back to index
-  
-
-@flask_app.route('/charts/', methods=['GET'])
-def charts():
-    return render_template('charts.html')
+    return render_template('index.html')
 
 
 @flask_app.route('/dashboard/', methods=['GET'])
-# def netgraph():
-#     print("In Netgraph")
-#     args = request.args
-#     address = args.get("add")
-#     print(address)
-#     ng.run_app(address)
-#     return render_template('netgraph.html', address=address)
 def render_netgraph():
-    print("in NG")
+    """
+    Prepare the Network Graph
+    :return:
+    """
     args = request.args
     address = args.get("add")
+    # Check if someone tried to pass an empty parameter
+    if address is None:
+        # Replace with placeholder wallet address
+        address = '0x949d4a80dd439d66d88406C0AB903C2B17eD2061'
     init_dash(address)
     return redirect('/netgraph/?add={}'.format(address), code=307)
 
@@ -307,9 +250,9 @@ def render_netgraph():
 def results():
     if request.method == 'POST':
         address = request.form.get('Wallet Address')
-        #address input validation
+        # address input validation
         
-        if (Web3.isAddress(address)):
+        if Web3.isAddress(address):
             print("valid")
             if is_blacklisted(address):
                 print("ADDRESS IS: " + address)
@@ -354,14 +297,17 @@ def results():
         return render_template('table.html', headings=headings, result=val, fraud=fraud_val, graphdata=graphdeets,
                                address=address.lower(), NGLink="/dashboard/?add="+address)
 
+
 @flask_app.route('/Flash')
 def flashmsg():
     return render_template("flashmsg.html")
 
-@flask_app.route('/Diagnostic', methods=['GET'])
-def diagnostic():
-    rf.diagnostics()
-    return render_template("index.html")
+# Legacy
+
+# @flask_app.route('/Diagnostic', methods=['GET'])
+# def diagnostic():
+#     rf.diagnostics()
+#     return render_template("index.html")
 
 
 @dash_app.route('/', methods=['GET'])
@@ -376,5 +322,4 @@ main_app = DispatcherMiddleware(flask_app, {
 })
 
 if __name__ == "__main__":
-    # server.run(debug=True)   # debug true means error show up on the site
-    run_simple('127.0.0.1', 8080, main_app, use_reloader=True, use_debugger=True)
+    run_simple('127.0.0.1', 8080, main_app, use_reloader=True, use_debugger=False)
