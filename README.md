@@ -30,7 +30,7 @@
 <br />
 <div align="center">
   <a href="https://github.com/ky99123/Ponzified">
-    <img src="images/Ethereum_logo_translucent.png" alt="Logo">
+    <img src="images/Ethereum_logo_translucent.png" alt="Logo" width="100" height="180">
   </a>
 
 <h3 align="center">Ponzified</h3>
