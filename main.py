@@ -224,4 +224,4 @@ main_app = DispatcherMiddleware(flask_app, {
 
 if __name__ == "__main__":
     # server.run(debug=True)   # debug true means error show up on the site
-    run_simple('0.0.0.0', 8080, main_app, use_reloader=True, use_debugger=True)
+    run_simple('127.0.0.1', 8080, main_app, use_reloader=True, use_debugger=True)
