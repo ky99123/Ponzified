@@ -78,11 +78,12 @@ def get_netgraph_elements(address):
     return elements
 
 
-dash.layout = html.Div([
+def init_dash(address):
+    dash.layout = html.Div([
         html.P("Nodes Information:"),
         cyto.Cytoscape(
             id='cytoscape',
-            elements=get_netgraph_elements("0xdb5c43a65e23481b714ef19f462d467d4eb85826"),
+            elements=get_netgraph_elements(address),
             layout={
                 'name': 'concentric',
                 'avoidOverlap': True,
@@ -157,6 +158,7 @@ def render_netgraph():
     print("in NG")
     args = request.args
     address = args.get("add")
+    init_dash(address)
     return redirect('/netgraph/?add={}'.format(address), code=307)
 
 
