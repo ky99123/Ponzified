@@ -1,0 +1,14 @@
+{% extends 'base.html' %}
+
+{%block head%} 
+{%endblock%}
+
+{%block body%} 
+<div class="jumbotron text-center">
+    <h1>Welcome to Ponzified</h1>
+    {% for message in get_flashed_messages() %}
+    <p class="lead">{{ message }}</p>
+    {% endfor %}
+    {% include 'input.html' %}
+</div>
+{%endblock%}

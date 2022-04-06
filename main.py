@@ -1,36 +1,26 @@
 # from crypt import methods
 from email.policy import default
 from itertools import count
-
+from config import secretkey
 from dash import Dash, html, dcc
 import dash_bootstrap_components as dbc
-from flask import Flask, render_template, request, redirect, url_for
-from flask_sqlalchemy import SQLAlchemy
-from sqlalchemy.exc import SQLAlchemyError
-import requests
+from flask import Flask, render_template, request, redirect, url_for,flash
 import time
 import json
-import math
 import dash_cytoscape as cyto
 from dash.dependencies import Input, Output, State
 from werkzeug.serving import run_simple
 from werkzeug.middleware.dispatcher import DispatcherMiddleware
+from web3 import Web3
 
 # Our scripts
 import dataprocessing as dp
 import Model as rf
-import netgraph as ng
 
 # app = Flask(__name__)
 flask_app = Flask(__name__)
 dash_app = Flask('dash')
-# tell the app where our db is
-# app.config['SQLALCHEMY_DATABASE_URI'] = 'sqlite:///Test.db'
-flask_app.config['SQLALCHEMY_DATABASE_URI'] = 'sqlite:///Test.db'
-db = SQLAlchemy(flask_app)
-# db = SQLAlchemy(app)
-
-apikey = "R63INQIAZW9HGVSG83R63M477H4YMXDH6Q"
+flask_app.secret_key = secretkey
 
 dash = Dash(__name__, server=dash_app, routes_pathname_prefix='/', requests_pathname_prefix='/netgraph/', external_stylesheets=[dbc.themes.BOOTSTRAP])
 
@@ -317,46 +307,56 @@ def render_netgraph():
 def results():
     if request.method == 'POST':
         address = request.form.get('Wallet Address')
-        if is_blacklisted(address):
-            print("ADDRESS IS: " + address)
-            print("Fraud")
-            fraud_val = "Fraudulent"
-            data, headings, val, sent_val, received_val, graphdeets = dp.get_data(address)
-        else:
-            print("In ML ")
-            data, headings, val, sent_val, received_val, graphdeets = dp.get_data(address)
-            prediction = rf.predict(data)
-            fraud_val = prediction
-            if prediction == 1:
+        #address input validation
+        
+        if (Web3.isAddress(address)):
+            print("valid")
+            if is_blacklisted(address):
                 print("ADDRESS IS: " + address)
                 print("Fraud")
                 fraud_val = "Fraudulent"
-            elif prediction == 0:
-                print("ADDRESS IS: " + address)
-                print("Not Fraud")
-                fraud_val = "Not Fraudulent"
+                data, headings, val, sent_val, received_val, graphdeets = dp.get_data(address)
+            else:
+                print("In ML ")
+                data, headings, val, sent_val, received_val, graphdeets = dp.get_data(address)
+                prediction = rf.predict(data)
+                fraud_val = prediction
+                if prediction == 1:
+                    print("ADDRESS IS: " + address)
+                    print("Fraud")
+                    fraud_val = "Fraudulent"
+                elif prediction == 0:
+                    print("ADDRESS IS: " + address)
+                    print("Not Fraud")
+                    fraud_val = "Not Fraudulent"
 
-        i = 0
-        while i < len(val):
-            for key, value in val[i].items():
-                # Get the time difference thing first
-                # Convert timestamp
-                if key == "timeStamp":
-                    time_str = time.strftime('%Y-%m-%d %H:%M',
-                                             time.localtime(int(value)))
-                    value = value.replace(value, time_str)
-                    val[i].update({"timeStamp": value})
-                if key == "value":
-                    value = int(value)/1000000000000000000
-                    val[i].update({"value": value})
-                
-                if key == "gasPrice":
-                    value = int(value)/1000000000
-                    val[i].update({"gasPrice": value})
-            i += 1
+            i = 0
+            while i < len(val):
+                for key, value in val[i].items():
+                    # Get the time difference thing first
+                    # Convert timestamp
+                    if key == "timeStamp":
+                        time_str = time.strftime('%Y-%m-%d %H:%M',
+                                                time.localtime(int(value)))
+                        value = value.replace(value, time_str)
+                        val[i].update({"timeStamp": value})
+                    if key == "value":
+                        value = int(value)/1000000000000000000
+                        val[i].update({"value": value})
+
+                    if key == "gasPrice":
+                        value = int(value)/1000000000
+                        val[i].update({"gasPrice": value})
+                i += 1
+        else:
+            flash("Invalid Ethereum address provided. Please try again")
+            return redirect('/Flash')
         return render_template('table.html', headings=headings, result=val, fraud=fraud_val, graphdata=graphdeets,
                                address=address.lower(), NGLink="/dashboard/?add="+address)
 
+@flask_app.route('/Flash')
+def flashmsg():
+    return render_template("flashmsg.html")
 
 @flask_app.route('/Diagnostic', methods=['GET'])
 def diagnostic():
