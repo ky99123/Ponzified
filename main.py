@@ -132,7 +132,7 @@ def init_dash(address):
     dash.layout = dbc.Container(
         children=[
             navbar,
-            alert,
+            # alert,
             html.Div([
 
                 html.P("Nodes Information:"),
@@ -240,41 +240,41 @@ def update_elements(data, elements):
         return elements
 
 
-@dash.callback(Input('Search', 'trigger'))
-def search():
-    search_new_address()
+# @dash.callback(Input('Search', 'trigger'))
+# def search():
+#     search_new_address()
 
 
-@dash.callback(Output('cytoscape', 'elements'),
-               Input(component_id='searchbtn', component_property='n_clicks'),
-               State('searchbar', 'value'),
-               State('cytoscape', 'elements'))
-def search_new_address(address, elements):
-    print('searching new address')
-    try:
-        new_elements = get_netgraph_elements(address)
-        return new_elements
-    except:
-        toggle_alert()
-        return elements
+# @dash.callback(Output('cytoscape', 'elements'),
+#                Input(component_id='searchbtn', component_property='n_clicks'),
+#                State('searchbar', 'value'),
+#                State('cytoscape', 'elements'))
+# def search_new_address(address, elements):
+#     print('searching new address')
+#     try:
+#         new_elements = get_netgraph_elements(address)
+#         return new_elements
+#     except:
+#         toggle_alert()
+#         return elements
 
 
-@dash.callback(
-    Output(component_id='alert-auto', component_property='is_open')
-)
-def toggle_alert():
-    return True
+# @dash.callback(
+#     Output(component_id='alert-auto', component_property='is_open')
+# )
+# def toggle_alert():
+#     return True
 
 
-@dash.callback(
-    Output("navbar-collapse", "is_open"),
-    [Input("navbar-toggler", "n_clicks")],
-    [State("navbar-collapse", "is_open")],
-)
-def toggle_navbar_collapse(n, is_open):
-    if n:
-        return not is_open
-    return is_open
+# @dash.callback(
+#     Output("navbar-collapse", "is_open"),
+#     [Input("navbar-toggler", "n_clicks")],
+#     [State("navbar-collapse", "is_open")],
+# )
+# def toggle_navbar_collapse(n, is_open):
+#     if n:
+#         return not is_open
+#     return is_open
 
 
 @flask_app.route('/', methods=['POST', 'GET'])  # parse url string of our application
